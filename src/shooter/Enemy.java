@@ -7,23 +7,21 @@ public class Enemy extends Entity{
 	private Game game;
 	//random generator
 	private Random randomGenerator = new Random();
-	
+	//enemy name
+	private String name;
 	//enemy hp
 	private int HP;
 
-	/*
-	 * Constructor - gets the enemy sprite
-	 */
+	/* Constructor - gets the enemy sprite */
 	public Enemy(Game game, String ref, String name, int x, int y, int hp){
 		super(game.getSprite(ref), x, y);
 
 		this.game = game;
+		this.name = name;
 		HP = hp;
 	}
 
-	/*
-	 * Generates the enemy x position
-	 */
+	/* Generates the enemy x position */
 	public int generateEnemyX(){
 		do{
 			x = randomGenerator.nextInt(game.getDisplayWidth()+1);
@@ -32,9 +30,7 @@ public class Enemy extends Entity{
 		return x;
 	}
 	
-	/*
-	 * Reduces the enemy hp
-	 */
+	/* Reduces the enemy hp */
 	public void reduceHP(int atk){
 		HP -= atk;
 		if (HP <= 0)
@@ -42,10 +38,13 @@ public class Enemy extends Entity{
 		else
 			game.registerHit(this);
 	}
+	
+	/* Returns the name of the enemy */
+	public String getName(){
+		return name;
+	}
 
-	/*
-	 * This enemy has collided with another entity
-	 */
+	/* This enemy has collided with another entity */
 	public void collidedWith(Entity other){
 		//the enemy collision is handled elsewhere
 	}

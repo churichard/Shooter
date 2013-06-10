@@ -6,9 +6,7 @@ public class Powerup extends Entity{
 	//name of powerup
 	private String name;
 
-	/*
-	 * Constructor - gets the powerup sprite
-	 */
+	/* Constructor - gets the powerup sprite */
 	public Powerup(Game game, String ref, String name, int x, int y) {
 		super(game.getSprite(ref), x, y);
 
@@ -16,16 +14,12 @@ public class Powerup extends Entity{
 		this.name = name;
 	}
 	
-	/*
-	 * Returns the name of the powerup
-	 */
+	/* Returns the name of the powerup */
 	public String getName(){
 		return name;
 	}
 
-	/*
-	 * The powerup collided with the player
-	 */
+	/* The powerup collided with the player */
 	public void collidedWith(Entity other){
 		if (other instanceof Player){
 			game.removeEntity(this);

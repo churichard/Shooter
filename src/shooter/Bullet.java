@@ -6,9 +6,7 @@ public class Bullet extends Entity{
 	//attack value
 	private int atk;
 
-	/*
-	 * Constructor - gets the bullet sprite
-	 */
+	/* Constructor - gets the bullet sprite */
 	public Bullet(Game game, String ref, int x, int y, int attack){
 		super(game.getSprite(ref), x, y);
 
@@ -16,16 +14,12 @@ public class Bullet extends Entity{
 		atk = attack;
 	}
 	
-	/*
-	 * Returns the atk value
-	 */
+	/* Returns the atk value */
 	public int getATK(){
 		return atk;
 	}
 
-	/*
-	 * This bullet has collided with another entity
-	 */
+	/* This bullet has collided with another entity */
 	public void collidedWith(Entity other){
 		if (other instanceof Enemy){
 			((Enemy) other).reduceHP(atk);

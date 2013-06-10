@@ -14,7 +14,8 @@ public class Sprite{
 	private int width;
 	//the height of the sprite
 	private int height;
-
+	
+	/* Constructor - creates the sprite texture */
 	public Sprite(String name){
 		try {
 			texture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("/res/"+name+".png"));
@@ -26,37 +27,27 @@ public class Sprite{
 		}
 	}
 	
-	/*
-	 * Returns the width of the image
-	 */
+	/* Returns the width of the image */
 	public int getWidth(){
 		return width;
 	}
 	
-	/*
-	 * Returns the height of the image
-	 */
+	/* Returns the height of the image */
 	public int getHeight(){
 		return height;
 	}
 	
-	/*
-	 * Sets the width of the image
-	 */
+	/* Sets the width of the image */
 	public void setWidth(int w){
 		width = w;
 	}
 	
-	/*
-	 * Sets the height of the iamge
-	 */
+	/* Sets the height of the iamge */
 	public void setHeight(int h){
 		height = h;
 	}
 	
-	/*
-	 * Returns the texture
-	 */
+	/* Returns the texture */
 	public Texture getTexture(){
 		return texture;
 	}

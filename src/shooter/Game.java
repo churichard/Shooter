@@ -2,7 +2,6 @@
  * Programmed by Richard Chu
  * Project started on July 24, 2012
  */
-
 package shooter;
 
 import java.util.ArrayList;
@@ -13,6 +12,7 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
+
 import static org.lwjgl.opengl.GL11.*;
 
 import org.newdawn.slick.Color;
@@ -36,7 +36,6 @@ public class Game {
 	private int enemyDelta; //time since the last enemy
 
 	/* Classes */
-	private Delta deltaClass; //delta class
 	private Player player; //player class
 
 	/* Background sprite */
@@ -85,9 +84,7 @@ public class Game {
 	//true if the game is over
 	private boolean gameOver = false;
 
-	/*
-	 * Start the game
-	 */
+	/* Start the game */
 	public void start(){
 		initGL();
 		init();
@@ -97,7 +94,7 @@ public class Game {
 				updateDelta();
 				render();
 				pollInput();
-				update(delta);
+				update();
 				updateDisplay();
 			}
 			else{
@@ -111,18 +108,14 @@ public class Game {
 		}
 	}
 
-	/*
-	 * Updates delta values
-	 */
+	/* Updates delta values */
 	private void updateDelta(){
-		delta = deltaClass.getDelta();
-		bulletDelta = deltaClass.getBulletDelta();
-		enemyDelta = deltaClass.getEnemyDelta();
+		delta = Delta.getDelta("frame");
+		bulletDelta = Delta.getDelta("bullet");
+		enemyDelta = Delta.getDelta("enemy");
 	}
 
-	/*
-	 * Initialize the GL display
-	 */
+	/* Initialize the GL display */
 	private void initGL(){
 		try {
 			Display.setDisplayMode(new DisplayMode(displayWidth,displayHeight));
@@ -151,12 +144,9 @@ public class Game {
 		glMatrixMode(GL_MODELVIEW);
 	}
 
-	/*
-	 * Initialize resources
-	 */
+	/* Initialize resources */
 	@SuppressWarnings("unchecked")
 	private void init(){
-		deltaClass = new Delta();
 		player = new Player(this, "player", displayWidth/2-30, 502);
 
 		//initialize the background sprite
@@ -180,9 +170,7 @@ public class Game {
 		}
 	}
 
-	/*
-	 * Polls for input
-	 */
+	/* Polls for input */
 	private void pollInput(){
 		//check to see if the w key is down
 		if (Keyboard.isKeyDown(Keyboard.KEY_W)){
@@ -216,9 +204,7 @@ public class Game {
 			mouseDown = false;
 	}
 
-	/*
-	 * Checks to see if the display is active or if it has been closed and updates it
-	 */
+	/* Checks to see if the display is active or if it has been closed and updates it */
 	private void updateDisplay(){
 		if (!Display.isActive()){
 			wKeyDown = false;
@@ -237,10 +223,8 @@ public class Game {
 		}
 	}
 
-	/*
-	 * Checks to see if a key is pressed
-	 */
-	private void update(int delta){
+	/* Checks to see if a key is pressed */
+	private void update(){
 		//checks to see if the w key is down
 		if (wKeyDown){
 			player.setY((int)(player.getY()-0.5*delta));
@@ -277,17 +261,21 @@ public class Game {
 				lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET2_X_OFFSET);
 				lastBullet.setY(player.getY()+playerSprite.getHeight()-bulletSprite.getHeight()/2+BULLET2_Y_OFFSET);
 			}
-			deltaClass.setLastBullet(deltaClass.getTime());
+			Delta.setLastBullet(Delta.getTime());
 		}
 
 		//checks to see if the time since the last enemy is greater than the enemy interval
 		if (enemyDelta > generateEnemyInterval()){
-			enemy.add(new Enemy(this, "Enemy", "green_box", 0, 0, 200));
+			double enemyGenerate = randomGenerator.nextDouble();
+			if (enemyGenerate >= 0.3)
+				enemy.add(new Enemy(this, "green_box", "green_box", 0, 0, 300));
+			else if (enemyGenerate < 0.3)
+				enemy.add(new Enemy(this, "red_box", "red_box", 0, 0, 300));
 			Enemy lastEnemy = enemy.get(enemy.size()-1);
 
 			lastEnemy.setX(lastEnemy.generateEnemyX());
 			lastEnemy.setY(-lastEnemy.getSprite().getHeight());
-			deltaClass.setLastEnemy(deltaClass.getTime());
+			Delta.setLastEnemy(Delta.getTime());
 		}
 
 		//checks for collisions
@@ -316,10 +304,9 @@ public class Game {
 				entity2.collidedWith(entity1);
 			}
 		}
-
-		
 	}
 
+	/* Checks to see if the player and bullets are within the bounds */
 	private void checkBounds() {
 		//checks to see if playerX is to the left of the left side of the display
 		if (player.getX() < 0)
@@ -344,9 +331,7 @@ public class Game {
 		}
 	}
 
-	/*
-	 * draws quads and places textures on them
-	 */
+	/* Renders the background, the score, and all of the sprites */
 	private void render(){
 		//clear the screen and depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -383,6 +368,7 @@ public class Game {
 		drawListEntity(explosion);
 	}
 
+	/* Draws an entity */
 	private void drawEntity(Entity ent){
 		Sprite entSprite = ent.getSprite();
 
@@ -402,8 +388,10 @@ public class Game {
 		glEnd();
 	}
 
-	@SuppressWarnings("rawtypes")
+	/* Draws all of the entities in a list */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void drawListEntity(ArrayList list) {
+		ArrayList listRemove = new ArrayList();
 		for (int i = 0; i < list.size(); i++){
 			Entity ent = (Entity) list.get(i);
 
@@ -413,14 +401,16 @@ public class Game {
 			if (ent.continueDrawing()){
 				if (ent instanceof Bullet)
 					ent.setY(ent.getY()-delta);
-				else if (ent instanceof Enemy || ent instanceof Explosion && ((Explosion) ent).getName().equals("enemy_hit"))
+				else if (ent instanceof Enemy && ((Enemy)ent).getName().equals("green_box"))
+					ent.setY(ent.getY()+delta/3);
+				else if (ent instanceof Enemy && ((Enemy)ent).getName().equals("red_box"))
 					ent.setY(ent.getY()+delta/2);
 				else if (ent instanceof Powerup)
-					ent.setY(ent.getY()+delta/3);
+					ent.setY(ent.getY()+delta/4);
 			}
 			//else if the entity is outside of the screen, remove it
 			else{
-				list.remove(i);
+				listRemove.add(list.get(i));
 			}
 
 			//if the player is dead, notify the player of death
@@ -428,48 +418,34 @@ public class Game {
 				notifyDeath();
 			}
 		}
+		for (int i = 0; i < listRemove.size(); i++){
+			list.remove(listRemove.get(i));
+		}
 	}
 
-	/*
-	 * Returns the display width
-	 */
+	/* Returns the display width */
 	public int getDisplayWidth(){
 		return displayWidth;
 	}
 
-	/*
-	 * Returns the display height
-	 */
+	/* Returns the display height */
 	public int getDisplayHeight(){
 		return displayHeight;
 	}
 
-	/*
-	 * Returns the delta value
-	 */
-	public int getDelta(){
-		return delta;
-	}
-
-	/*
-	 * Randomly generates a number between 100 and 3000 to determine the number of milliseconds between each enemy
-	 */
+	/* Randomly generates a number between 100 and 3000 to determine the number of milliseconds between each enemy */
 	public int generateEnemyInterval(){
 		enemyInterval = randomGenerator.nextInt(2901)+100;
 
 		return enemyInterval;
 	}
 
-	/*
-	 * Creates a sprite that displays an image
-	 */
+	/* Creates a sprite that displays an image */
 	public Sprite getSprite(String name){
 		return new Sprite(name);
 	}
 
-	/*
-	 * Randomly checks to see if a powerup will drop from an enemy
-	 */
+	/* Randomly checks to see if a powerup will drop from an enemy */
 	public void powerupCheck(int x, int y){
 		//checks to see if a powerup will drop
 		double powerupCheck = randomGenerator.nextDouble();
@@ -493,18 +469,14 @@ public class Game {
 		}
 	}
 
-	/*
-	 * Registers a hit
-	 */
+	/* Registers a hit */
 	public void registerHit(Entity entity){
 		if (entity instanceof Enemy){
 			explosion.add(new Explosion(this, "enemy_hit", "enemy_hit", entity.getX()-5, entity.getY()-5));
 		}
 	}
 
-	/*
-	 * Removes an entity
-	 */
+	/* Removes an entity */
 	public void removeEntity(Entity entity){
 		if (entity instanceof Bullet){
 			bullet.remove(entity);
@@ -515,7 +487,10 @@ public class Game {
 			enemy.remove(entity);
 			explosion.add(new Explosion(this, "enemy_explosion", "explosion", enemyX-5, enemyY-5));
 			powerupCheck(enemyX, enemyY);
-			score += 10;
+			if (!stopDrawingPlayer && ((Enemy) entity).getName().equals("green_box"))
+				score += 10;
+			else if (!stopDrawingPlayer && ((Enemy) entity).getName().equals("red_box"))
+				score += 20;
 		}
 		else if (entity instanceof Powerup){
 			powerup.remove(entity);
@@ -532,20 +507,15 @@ public class Game {
 		else if (entity instanceof Player){
 			explosion.add(new Explosion(this, "player_explosion", "explosion", player.getX()-5, player.getY()-5));
 			stopDrawingPlayer = true;
-			score -= 10;
 		}
 	}
 
-	/*
-	 * Notifies the player that they died
-	 */
+	/* Notifies the player that they died */
 	public void notifyDeath(){
 		gameOver = true;
 	}
 
-	/*
-	 * main method
-	 */
+	/* Main method */
 	public static void main(String [] args){
 		new Game().start();
 	}

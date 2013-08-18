@@ -38,8 +38,11 @@ public class Game {
 	/* Classes */
 	private Player player; //player class
 
-	/* Background sprite */
+	/* Screen sprites */
 	private Sprite background;
+	private Sprite titleScreen;
+	private Sprite instructScreen;
+	private Sprite creditsScreen;
 
 	/* ArrayLists */
 	private ArrayList<Bullet> bullet = new ArrayList<Bullet>(); //Bullet ArrayList
@@ -86,25 +89,86 @@ public class Game {
 
 	/* Start the game */
 	public void start(){
+		//initialize stuff
 		initGL();
 		init();
-
+		
+		//main game loop
 		while(true){
-			if (!gameOver){
+			//display the title screen
+			showTitleScreen();
+			
+			while (!gameOver){
 				updateDelta();
 				render();
 				pollInput();
 				update();
 				updateDisplay();
 			}
-			else{
-				System.out.println("Game Over!!");
-				try{
-					Thread.sleep(1000);
-				}catch(Exception e){}
-				Display.destroy();
-				System.exit(0);
+			//temp code for game overs
+			System.out.println("Game Over!!");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
+		}
+	}
+	
+	/* Displays the title screen */
+	private void showTitleScreen(){
+		//reset game parameters
+		gameOver = false;
+		stopDrawingPlayer = false;
+		enemy.clear();
+		bullet.clear();
+		powerup.clear();
+		explosion.clear();
+		score = 0;
+		doubleShot = false;
+		
+		//if the play button is not clicked
+		while(!Mouse.isButtonDown(0) || !(Mouse.getX() >= 249 && Mouse.getX() <= 539
+				&& Mouse.getY() <= (Display.getHeight()-235) && Mouse.getY() >= (Display.getHeight()-304))){
+			//draw title screen
+			drawScreen(titleScreen);
+			
+			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539
+					&& Mouse.getY() <= (Display.getHeight()-324) && Mouse.getY() >= (Display.getHeight()-393)){
+				showInstructScreen();
+			}
+			
+			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539
+					&& Mouse.getY() <= (Display.getHeight()-413) && Mouse.getY() >= (Display.getHeight()-482)){
+				showCreditsScreen();
+			}
+			
+			//update display
+			updateDisplay();
+		}
+	}
+	
+	/* Displays the instructions screen */
+	private void showInstructScreen(){
+		while (!Mouse.isButtonDown(0) || !(Mouse.getX() >= 643 && Mouse.getX() <= 758
+					&& Mouse.getY() <= (Display.getHeight()-494) && Mouse.getY() >= (Display.getHeight()-562))){
+			//draw instructions screen
+			drawScreen(instructScreen);
+			
+			//update display
+			updateDisplay();
+		}
+	}
+	
+	/* Displays the credits screen */
+	private void showCreditsScreen(){
+		while (!Mouse.isButtonDown(0) || !(Mouse.getX() >= 643 && Mouse.getX() <= 758
+				&& Mouse.getY() <= (Display.getHeight()-494) && Mouse.getY() >= (Display.getHeight()-562))){
+			//draw credits screen
+			drawScreen(creditsScreen);
+			
+			//update display
+			updateDisplay();
 		}
 	}
 
@@ -153,7 +217,22 @@ public class Game {
 		background = getSprite("background");
 		background.setWidth(background.getTexture().getImageWidth());
 		background.setHeight(background.getTexture().getImageHeight());
-
+		
+		//initialize the title screen sprite
+		titleScreen = getSprite("title_screen");
+		titleScreen.setWidth(titleScreen.getTexture().getImageWidth());
+		titleScreen.setHeight(titleScreen.getTexture().getImageHeight());
+		
+		//initialize the instructions screen sprite
+		instructScreen = getSprite("instructions_screen");
+		instructScreen.setWidth(instructScreen.getTexture().getImageWidth());
+		instructScreen.setHeight(instructScreen.getTexture().getImageHeight());
+		
+		//initialize the credits screen sprite
+		creditsScreen = getSprite("credits_screen");
+		creditsScreen.setWidth(creditsScreen.getTexture().getImageWidth());
+		creditsScreen.setHeight(creditsScreen.getTexture().getImageHeight());
+		
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -347,22 +426,9 @@ public class Game {
 	private void render(){
 		//clear the screen and depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		//draw background
-		Texture backTex = background.getTexture();
-		Color.white.bind();
-		backTex.bind();
-
-		glBegin(GL_QUADS);
-		glTexCoord2f(0,backTex.getHeight());
-		glVertex2f(0, 0);
-		glTexCoord2f(backTex.getWidth(),backTex.getHeight());
-		glVertex2f(background.getWidth(), 0);
-		glTexCoord2f(backTex.getWidth(),0);
-		glVertex2f(background.getWidth(), background.getHeight());
-		glTexCoord2f(0,0);
-		glVertex2f(0, background.getHeight());
-		glEnd();
+		
+		//draws the background
+		drawScreen(background);
 
 		//draw score
 		font.drawString(10, 10, "Score: " + score);
@@ -436,6 +502,24 @@ public class Game {
 		for (int i = 0; i < listRemove.size(); i++){
 			list.remove(listRemove.get(i));
 		}
+	}
+	
+	/* Draws a screen */
+	private void drawScreen(Sprite spr){
+		Texture tex = spr.getTexture();
+		Color.white.bind();
+		tex.bind();
+
+		glBegin(GL_QUADS);
+		glTexCoord2f(0,tex.getHeight());
+		glVertex2f(0, spr.getHeight());
+		glTexCoord2f(tex.getWidth(),tex.getHeight());
+		glVertex2f(spr.getWidth(), spr.getHeight());
+		glTexCoord2f(tex.getWidth(),0);
+		glVertex2f(spr.getWidth(), 0);
+		glTexCoord2f(0,0);
+		glVertex2f(0, 0);
+		glEnd();
 	}
 
 	/* Returns the display width */

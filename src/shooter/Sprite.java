@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.newdawn.slick.opengl.Texture;
 import org.newdawn.slick.opengl.TextureLoader;
-import org.newdawn.slick.util.ResourceLoader;
 
 public class Sprite{
 	//the texture that stores the images for this sprite
@@ -18,7 +17,7 @@ public class Sprite{
 	/* Constructor - creates the sprite texture */
 	public Sprite(String name){
 		try {
-			texture = TextureLoader.getTexture("PNG", ResourceLoader.getResourceAsStream("/res/"+name+".png"));
+			texture = TextureLoader.getTexture("PNG", getClass().getResourceAsStream("/res/"+name+".png"));
 			width = (int)(texture.getImageWidth()/1.3);
 			height = (int)(texture.getImageHeight()/1.3);
 		} catch (IOException e) {

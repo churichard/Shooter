@@ -51,7 +51,7 @@ public abstract class Entity {
 	
 	/* Checks to see if the entity should continue to be drawn */
 	public boolean continueDrawing(){
-		return x > -1 && x < Display.getWidth() && y >= -getSprite().getHeight() && y <= Display.getHeight()+1;
+		return x >= -getSprite().getWidth() && x <= Display.getWidth() && y >= -getSprite().getHeight() && y <= Display.getHeight();
 	}
 	
 	/* Checks to see if this entity has collided with another entity */

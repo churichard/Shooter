@@ -251,15 +251,36 @@ public class Game {
 			Bullet lastBullet = bullet.get(bullet.size()-1);
 			Sprite playerSprite = player.getSprite();
 			Sprite bulletSprite = lastBullet.getSprite();
-
+			
+			//sets the x and y coordinates of the bullet
 			lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET_X_OFFSET);
 			lastBullet.setY(player.getY()+playerSprite.getHeight()-bulletSprite.getHeight()/2+BULLET_Y_OFFSET);
+			
+			//set the angle of the shot
+			double xChange = Mouse.getX() - lastBullet.getX();
+			double yChange = (Display.getHeight()-Mouse.getY()) - lastBullet.getY();
+			double magnitude = Math.sqrt(xChange*xChange+yChange*yChange);
+			xChange = xChange/magnitude * 20;
+			yChange = yChange/magnitude * 20;
+			lastBullet.setXChange((int) xChange);
+			lastBullet.setYChange((int) yChange);
+			
+			//if the doubleshot powerup is activated
 			if (doubleShot){
 				bullet.add(new Bullet(this, "bullet", 0, 0, 100));
 				lastBullet = bullet.get(bullet.size()-1);
 
 				lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET2_X_OFFSET);
 				lastBullet.setY(player.getY()+playerSprite.getHeight()-bulletSprite.getHeight()/2+BULLET2_Y_OFFSET);
+				
+				//set the angle of the shot
+				double doubleshotXChange = Mouse.getX() - lastBullet.getX();
+				double doubleshotYChange = (Display.getHeight()-Mouse.getY()) - lastBullet.getY();
+				double doubleshotMagnitude = Math.sqrt(xChange*xChange+yChange*yChange);
+				doubleshotXChange = xChange/doubleshotMagnitude * 20;
+				doubleshotYChange = yChange/doubleshotMagnitude * 20;
+				lastBullet.setXChange((int) doubleshotXChange);
+				lastBullet.setYChange((int) doubleshotYChange);
 			}
 			Delta.setLastBullet(Delta.getTime());
 		}
@@ -320,15 +341,6 @@ public class Game {
 		//checks to see if playerY is greater than the height of the display
 		if (player.getY() > Display.getHeight()-player.getSprite().getHeight())
 			player.setY(Display.getHeight()-player.getSprite().getHeight());
-		//checks to see if the bullet is in the screen
-		for (int i = 0; i < bullet.size(); i++){
-			//checks to see if bulletX is to the left of the left side of the display
-			if (bullet.get(i).getX() < 0)
-				bullet.get(i).setX(0);
-			//checks to see if bulletX is greater than the width of the display
-			if (bullet.get(i).getX() > Display.getWidth()-bullet.get(i).getSprite().getWidth())
-				bullet.get(i).setX(Display.getWidth()-bullet.get(i).getSprite().getWidth());
-		}
 	}
 
 	/* Renders the background, the score, and all of the sprites */
@@ -399,8 +411,11 @@ public class Game {
 
 			//if the entity is still in the screen, update its position
 			if (ent.continueDrawing()){
-				if (ent instanceof Bullet)
-					ent.setY(ent.getY()-delta);
+				if (ent instanceof Bullet){
+					ent.setX(ent.getX()+((Bullet) ent).getXChange());
+					ent.setY(ent.getY()+((Bullet) ent).getYChange());
+					//ent.setY(ent.getY()-delta);
+				}
 				else if (ent instanceof Enemy && ((Enemy)ent).getName().equals("green_box"))
 					ent.setY(ent.getY()+delta/3);
 				else if (ent instanceof Enemy && ((Enemy)ent).getName().equals("red_box"))
@@ -500,6 +515,12 @@ public class Game {
 			else if (((Powerup)entity).getName() == "explosion"){
 				for (int i = 0; i < enemy.size(); i++){
 					explosion.add(new Explosion(this, "enemy_explosion", "explosion", enemy.get(i).getX()-5, enemy.get(i).getY()-5));
+				}
+				for (int i = 0; i < enemy.size(); i++){
+					if (enemy.get(i).getName().equals("green_box"))
+						score += 10;
+					else if (enemy.get(i).getName().equals("red_box"))
+						score += 20;
 				}
 				enemy.clear();
 			}

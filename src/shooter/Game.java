@@ -28,6 +28,7 @@ public class Game {
 	private int displayHeight = 600; //length of display
 
 	/* Font */
+	private java.awt.Font awtFont;
 	private UnicodeFont font;
 
 	/* Delta */
@@ -49,6 +50,10 @@ public class Game {
 	private ArrayList<Enemy> enemy = new ArrayList<Enemy>(); //Enemy ArrayList
 	private ArrayList<Powerup> powerup = new ArrayList<Powerup>(); //Powerup ArrayList
 	private ArrayList<Explosion> explosion = new ArrayList<Explosion>(); //Explosion ArrayList
+
+	/* Player initial position */
+	private int initPlayerX = displayWidth/2-30;
+	private int initPlayerY = 502;
 
 	/* Bullet offsets */
 	//First bullet offset
@@ -92,12 +97,12 @@ public class Game {
 		//initialize stuff
 		initGL();
 		init();
-		
+
 		//main game loop
 		while(true){
 			//display the title screen
 			showTitleScreen();
-			
+
 			while (!gameOver){
 				updateDelta();
 				render();
@@ -106,7 +111,6 @@ public class Game {
 				updateDisplay();
 			}
 			//temp code for game overs
-			System.out.println("Game Over!!");
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -114,59 +118,83 @@ public class Game {
 			}
 		}
 	}
-	
+
 	/* Displays the title screen */
+	@SuppressWarnings("unchecked")
 	private void showTitleScreen(){
 		//reset game parameters
+		//resets all keys to not being pressed
+		wKeyDown = false;
+		aKeyDown = false;
+		sKeyDown = false;
+		dKeyDown = false;
+		mouseDown = false;
+		//resets the player's position
+		player.setX(initPlayerX);
+		player.setY(initPlayerY);
+		//the game is not over
 		gameOver = false;
 		stopDrawingPlayer = false;
+		//clears the entity arraylists
 		enemy.clear();
 		bullet.clear();
 		powerup.clear();
 		explosion.clear();
+		//score is 0
 		score = 0;
+		//doubleshot is false
 		doubleShot = false;
-		
+		//setup fonts
+		awtFont = new java.awt.Font("/res/ConsolaMono.ttf", java.awt.Font.BOLD, 18);
+		font = new UnicodeFont(awtFont);
+		font.getEffects().add(new ColorEffect(java.awt.Color.white));
+		font.addAsciiGlyphs();
+		try{
+			font.loadGlyphs();
+		} catch (SlickException e){
+			e.printStackTrace();
+		}
+
 		//if the play button is not clicked
 		while(!Mouse.isButtonDown(0) || !(Mouse.getX() >= 249 && Mouse.getX() <= 539
 				&& Mouse.getY() <= (Display.getHeight()-235) && Mouse.getY() >= (Display.getHeight()-304))){
 			//draw title screen
 			drawScreen(titleScreen);
-			
+
 			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539
 					&& Mouse.getY() <= (Display.getHeight()-324) && Mouse.getY() >= (Display.getHeight()-393)){
 				showInstructScreen();
 			}
-			
+
 			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539
 					&& Mouse.getY() <= (Display.getHeight()-413) && Mouse.getY() >= (Display.getHeight()-482)){
 				showCreditsScreen();
 			}
-			
+
 			//update display
 			updateDisplay();
 		}
 	}
-	
+
 	/* Displays the instructions screen */
 	private void showInstructScreen(){
 		while (!Mouse.isButtonDown(0) || !(Mouse.getX() >= 643 && Mouse.getX() <= 758
-					&& Mouse.getY() <= (Display.getHeight()-494) && Mouse.getY() >= (Display.getHeight()-562))){
+				&& Mouse.getY() <= (Display.getHeight()-494) && Mouse.getY() >= (Display.getHeight()-562))){
 			//draw instructions screen
 			drawScreen(instructScreen);
-			
+
 			//update display
 			updateDisplay();
 		}
 	}
-	
+
 	/* Displays the credits screen */
 	private void showCreditsScreen(){
 		while (!Mouse.isButtonDown(0) || !(Mouse.getX() >= 643 && Mouse.getX() <= 758
 				&& Mouse.getY() <= (Display.getHeight()-494) && Mouse.getY() >= (Display.getHeight()-562))){
 			//draw credits screen
 			drawScreen(creditsScreen);
-			
+
 			//update display
 			updateDisplay();
 		}
@@ -211,34 +239,35 @@ public class Game {
 	/* Initialize resources */
 	@SuppressWarnings("unchecked")
 	private void init(){
-		player = new Player(this, "player", displayWidth/2-30, 502);
+		//creates the player
+		player = new Player(this, "player", initPlayerX, initPlayerY);
 
 		//initialize the background sprite
 		background = getSprite("background");
 		background.setWidth(background.getTexture().getImageWidth());
 		background.setHeight(background.getTexture().getImageHeight());
-		
+
 		//initialize the title screen sprite
 		titleScreen = getSprite("title_screen");
 		titleScreen.setWidth(titleScreen.getTexture().getImageWidth());
 		titleScreen.setHeight(titleScreen.getTexture().getImageHeight());
-		
+
 		//initialize the instructions screen sprite
 		instructScreen = getSprite("instructions_screen");
 		instructScreen.setWidth(instructScreen.getTexture().getImageWidth());
 		instructScreen.setHeight(instructScreen.getTexture().getImageHeight());
-		
+
 		//initialize the credits screen sprite
 		creditsScreen = getSprite("credits_screen");
 		creditsScreen.setWidth(creditsScreen.getTexture().getImageWidth());
 		creditsScreen.setHeight(creditsScreen.getTexture().getImageHeight());
-		
+
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 		//setup fonts
-		java.awt.Font awtFont = new java.awt.Font("/res/ConsolaMono.ttf", java.awt.Font.BOLD, 18);
+		awtFont = new java.awt.Font("/res/ConsolaMono.ttf", java.awt.Font.BOLD, 60);
 		font = new UnicodeFont(awtFont);
 		font.getEffects().add(new ColorEffect(java.awt.Color.white));
 		font.addAsciiGlyphs();
@@ -320,21 +349,21 @@ public class Game {
 		if (dKeyDown){
 			player.setX((int)(player.getX()+0.5*delta));
 		}
-		
+
 		//checks to make sure the player is within the bounds
 		checkBounds();
-		
+
 		//checks to see if the left mouse button is clicked
 		if (mouseDown){
 			bullet.add(new Bullet(this, "bullet", 0, 0, 100));
 			Bullet lastBullet = bullet.get(bullet.size()-1);
 			Sprite playerSprite = player.getSprite();
 			Sprite bulletSprite = lastBullet.getSprite();
-			
+
 			//sets the x and y coordinates of the bullet
 			lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET_X_OFFSET);
 			lastBullet.setY(player.getY()+playerSprite.getHeight()-bulletSprite.getHeight()/2+BULLET_Y_OFFSET);
-			
+
 			//set the angle of the shot
 			double xChange = Mouse.getX() - lastBullet.getX();
 			double yChange = (Display.getHeight()-Mouse.getY()) - lastBullet.getY();
@@ -343,7 +372,7 @@ public class Game {
 			yChange = yChange/magnitude * 20;
 			lastBullet.setXChange((int) xChange);
 			lastBullet.setYChange((int) yChange);
-			
+
 			//if the doubleshot powerup is activated
 			if (doubleShot){
 				bullet.add(new Bullet(this, "bullet", 0, 0, 100));
@@ -351,7 +380,7 @@ public class Game {
 
 				lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET2_X_OFFSET);
 				lastBullet.setY(player.getY()+playerSprite.getHeight()-bulletSprite.getHeight()/2+BULLET2_Y_OFFSET);
-				
+
 				//set the angle of the shot
 				double doubleshotXChange = Mouse.getX() - lastBullet.getX();
 				double doubleshotYChange = (Display.getHeight()-Mouse.getY()) - lastBullet.getY();
@@ -423,15 +452,32 @@ public class Game {
 	}
 
 	/* Renders the background, the score, and all of the sprites */
+	@SuppressWarnings("unchecked")
 	private void render(){
 		//clear the screen and depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
+
 		//draws the background
 		drawScreen(background);
 
 		//draw score
 		font.drawString(10, 10, "Score: " + score);
+
+		if (stopDrawingPlayer){
+			//setup fonts
+			awtFont = new java.awt.Font("/res/Judson.ttf", java.awt.Font.BOLD, 80);
+			font = new UnicodeFont(awtFont);
+			font.getEffects().add(new ColorEffect(java.awt.Color.white));
+			font.addAsciiGlyphs();
+			try{
+				font.loadGlyphs();
+			} catch (SlickException e){
+				e.printStackTrace();
+			}
+			//draw Game Over
+			font.drawString(displayWidth/2-font.getWidth("Game Over!")/2,
+					displayHeight/2-font.getHeight("Game Over!")/2, "Game Over!");
+		}
 
 		//drawing player
 		if (!stopDrawingPlayer)
@@ -503,7 +549,7 @@ public class Game {
 			list.remove(listRemove.get(i));
 		}
 	}
-	
+
 	/* Draws a screen */
 	private void drawScreen(Sprite spr){
 		Texture tex = spr.getTexture();

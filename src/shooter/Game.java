@@ -4,12 +4,14 @@
  */
 package shooter;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Random;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.openal.AL;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
 
@@ -19,7 +21,10 @@ import org.newdawn.slick.Color;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.UnicodeFont;
 import org.newdawn.slick.font.effects.ColorEffect;
+import org.newdawn.slick.openal.Audio;
+import org.newdawn.slick.openal.AudioLoader;
 import org.newdawn.slick.opengl.Texture;
+import org.newdawn.slick.util.ResourceLoader;
 
 public class Game {
 	/* Frame rendering */
@@ -44,6 +49,12 @@ public class Game {
 	private Sprite titleScreen;
 	private Sprite instructScreen;
 	private Sprite creditsScreen;
+	
+	/* Sound */
+	private Audio shootEffect; //shoot sfx
+	private Audio enemyExplosionEffect; //enemy explosion sfx
+	private Audio playerExplosionEffect; //player explosion sfx
+	private Audio powerupGetEffect; //obtain powerup sfx
 
 	/* ArrayLists */
 	private ArrayList<Bullet> bullet = new ArrayList<Bullet>(); //Bullet ArrayList
@@ -55,7 +66,9 @@ public class Game {
 	private int initPlayerX = displayWidth/2-30;
 	private int initPlayerY = 502;
 
-	/* Bullet offsets */
+	/* Bullet */
+	//Shooting speed
+	private int shootingSpeed = 150; //can shoot a bullet every 150 ms
 	//First bullet offset
 	private int BULLET_X_OFFSET = (int)(-57/1.3);
 	private int BULLET_Y_OFFSET = (int)(-85/1.3);
@@ -129,6 +142,13 @@ public class Game {
 		sKeyDown = false;
 		dKeyDown = false;
 		mouseDown = false;
+		//reset mouse
+		Mouse.destroy();
+		try {
+			Mouse.create();
+		} catch (LWJGLException e1) {
+			e1.printStackTrace();
+		}
 		//resets the player's position
 		player.setX(initPlayerX);
 		player.setY(initPlayerY);
@@ -261,6 +281,20 @@ public class Game {
 		creditsScreen = getSprite("credits_screen");
 		creditsScreen.setWidth(creditsScreen.getTexture().getImageWidth());
 		creditsScreen.setHeight(creditsScreen.getTexture().getImageHeight());
+		
+		//initialize sound
+		try {
+			//shoot sfx
+			shootEffect = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/shoot.wav"));
+			//enemy explosion sfx
+			enemyExplosionEffect = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/enemy_explosion.wav"));
+			//player explosion sfx
+			playerExplosionEffect = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/player_explosion.wav"));
+			//obtain powerup sfx
+			powerupGetEffect = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/powerup_get.wav"));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
@@ -305,7 +339,7 @@ public class Game {
 		else
 			dKeyDown = false;
 		//check to see if the left mouse button is down and the time since the last bullet is at least 100 milliseconds
-		if (Mouse.isButtonDown(0) && bulletDelta > 100){
+		if (Mouse.isButtonDown(0) && bulletDelta > shootingSpeed){
 			mouseDown = true;
 		}
 		else
@@ -327,6 +361,7 @@ public class Game {
 
 		if (Display.isCloseRequested()){
 			Display.destroy();
+			AL.destroy();
 			System.exit(0);
 		}
 	}
@@ -355,6 +390,9 @@ public class Game {
 
 		//checks to see if the left mouse button is clicked
 		if (mouseDown){
+			//play the shoot sound
+			shootEffect.playAsSoundEffect(1.0f, 0.6f, false);
+			
 			bullet.add(new Bullet(this, "bullet", 0, 0, 100));
 			Bullet lastBullet = bullet.get(bullet.size()-1);
 			Sprite playerSprite = player.getSprite();
@@ -630,6 +668,10 @@ public class Game {
 			int enemyX = entity.getX();
 			int enemyY = entity.getY();
 			enemy.remove(entity);
+			
+			//play enemy explosion sfx
+			enemyExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);
+			
 			explosion.add(new Explosion(this, "enemy_explosion", "explosion", enemyX-5, enemyY-5));
 			powerupCheck(enemyX, enemyY);
 			if (!stopDrawingPlayer && ((Enemy) entity).getName().equals("green_box"))
@@ -638,6 +680,9 @@ public class Game {
 				score += 20;
 		}
 		else if (entity instanceof Powerup){
+			//play obtain powerup sfx
+			powerupGetEffect.playAsSoundEffect(1.0f, 2.0f, false);
+			
 			powerup.remove(entity);
 			if (((Powerup)entity).getName() == "doubleshot"){
 				doubleShot = true;
@@ -652,10 +697,15 @@ public class Game {
 					else if (enemy.get(i).getName().equals("red_box"))
 						score += 20;
 				}
+				//play enemy explosion sfx
+				enemyExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);
 				enemy.clear();
 			}
 		}
 		else if (entity instanceof Player){
+			//play player explosion sfx
+			playerExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);
+			
 			explosion.add(new Explosion(this, "player_explosion", "explosion", player.getX()-5, player.getY()-5));
 			stopDrawingPlayer = true;
 		}

@@ -177,18 +177,24 @@ public class Game {
 
 		//if the play button is not clicked
 		while(!Mouse.isButtonDown(0) || !(Mouse.getX() >= 249 && Mouse.getX() <= 539
-				&& Mouse.getY() <= (Display.getHeight()-235) && Mouse.getY() >= (Display.getHeight()-304))){
+				&& Mouse.getY() <= (Display.getHeight()-215) && Mouse.getY() >= (Display.getHeight()-284))){
 			//draw title screen
 			drawScreen(titleScreen);
 
 			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539
-					&& Mouse.getY() <= (Display.getHeight()-324) && Mouse.getY() >= (Display.getHeight()-393)){
+					&& Mouse.getY() <= (Display.getHeight()-304) && Mouse.getY() >= (Display.getHeight()-373)){
 				showInstructScreen();
 			}
 
 			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539
-					&& Mouse.getY() <= (Display.getHeight()-413) && Mouse.getY() >= (Display.getHeight()-482)){
+					&& Mouse.getY() <= (Display.getHeight()-393) && Mouse.getY() >= (Display.getHeight()-462)){
 				showCreditsScreen();
+			}
+			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539
+					&& Mouse.getY() <= (Display.getHeight()-482) && Mouse.getY() >= (Display.getHeight()-551)){
+				Display.destroy();
+				AL.destroy();
+				System.exit(0);
 			}
 
 			//update display

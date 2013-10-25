@@ -1,6 +1,5 @@
 /*
  * Programmed by Richard Chu
- * Project started on July 24, 2012
  */
 package shooter;
 
@@ -49,15 +48,17 @@ public class Game {
 	private Sprite titleScreen;
 	private Sprite instructScreen;
 	private Sprite creditsScreen;
-	
+
 	/* Sound */
 	private Audio shootEffect; //shoot sfx
 	private Audio enemyExplosionEffect; //enemy explosion sfx
 	private Audio playerExplosionEffect; //player explosion sfx
 	private Audio powerupGetEffect; //obtain powerup sfx
+	private Audio playerHitEffect; //player hit sfx
 
 	/* ArrayLists */
 	private ArrayList<Bullet> bullet = new ArrayList<Bullet>(); //Bullet ArrayList
+	private ArrayList<Bullet> enemy_bullet = new ArrayList<Bullet>(); //Enemy Bullet ArrayList
 	private ArrayList<Enemy> enemy = new ArrayList<Enemy>(); //Enemy ArrayList
 	private ArrayList<Powerup> powerup = new ArrayList<Powerup>(); //Powerup ArrayList
 	private ArrayList<Explosion> explosion = new ArrayList<Explosion>(); //Explosion ArrayList
@@ -96,8 +97,9 @@ public class Game {
 	/* Powerups */
 	private boolean doubleShot = false;
 
-	/* Score */
-	private int score = 0;
+	/* Cash */
+	private int cash = 0;
+	private int totalCash = 0;
 
 	/* Game over */
 	//true if the player should stop being drawn
@@ -149,6 +151,8 @@ public class Game {
 		} catch (LWJGLException e1) {
 			e1.printStackTrace();
 		}
+		//resets the player's hp
+		player.setHP(1000);
 		//resets the player's position
 		player.setX(initPlayerX);
 		player.setY(initPlayerY);
@@ -158,14 +162,16 @@ public class Game {
 		//clears the entity arraylists
 		enemy.clear();
 		bullet.clear();
+		enemy_bullet.clear();
 		powerup.clear();
 		explosion.clear();
-		//score is 0
-		score = 0;
+		//cash and totalCash are 0
+		cash = 0;
+		totalCash = 0;
 		//doubleshot is false
 		doubleShot = false;
 		//setup fonts
-		awtFont = new java.awt.Font("/res/ConsolaMono.ttf", java.awt.Font.BOLD, 18);
+		awtFont = new java.awt.Font("/res/ConsolaMono.ttf", java.awt.Font.BOLD, 20);
 		font = new UnicodeFont(awtFont);
 		font.getEffects().add(new ColorEffect(java.awt.Color.white));
 		font.addAsciiGlyphs();
@@ -200,6 +206,9 @@ public class Game {
 			//update display
 			updateDisplay();
 		}
+
+		//reset beginning time
+		Delta.setBeginningTime(Delta.getTime());
 	}
 
 	/* Displays the instructions screen */
@@ -266,7 +275,7 @@ public class Game {
 	@SuppressWarnings("unchecked")
 	private void init(){
 		//creates the player
-		player = new Player(this, "player", initPlayerX, initPlayerY);
+		player = new Player(this, "player", initPlayerX, initPlayerY, 1000);
 
 		//initialize the background sprite
 		background = getSprite("background");
@@ -287,7 +296,7 @@ public class Game {
 		creditsScreen = getSprite("credits_screen");
 		creditsScreen.setWidth(creditsScreen.getTexture().getImageWidth());
 		creditsScreen.setHeight(creditsScreen.getTexture().getImageHeight());
-		
+
 		//initialize sound
 		try {
 			//shoot sfx
@@ -298,6 +307,8 @@ public class Game {
 			playerExplosionEffect = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/player_explosion.wav"));
 			//obtain powerup sfx
 			powerupGetEffect = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/powerup_get.wav"));
+			//player hit sfx
+			playerHitEffect = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/player_hit.wav"));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -397,8 +408,8 @@ public class Game {
 		//checks to see if the left mouse button is clicked
 		if (mouseDown){
 			//play the shoot sound
-			shootEffect.playAsSoundEffect(1.0f, 0.6f, false);
-			
+			shootEffect.playAsSoundEffect(1.0f, 0.5f, false);
+
 			bullet.add(new Bullet(this, "bullet", 0, 0, 100));
 			Bullet lastBullet = bullet.get(bullet.size()-1);
 			Sprite playerSprite = player.getSprite();
@@ -440,10 +451,10 @@ public class Game {
 		//checks to see if the time since the last enemy is greater than the enemy interval
 		if (enemyDelta > generateEnemyInterval()){
 			double enemyGenerate = randomGenerator.nextDouble();
-			if (enemyGenerate >= 0.3)
-				enemy.add(new Enemy(this, "green_box", "green_box", 0, 0, 300));
+			if (enemyGenerate >= 0.3 || Delta.getDelta("beginning") <= 3000)
+				enemy.add(new Enemy(this, "green_box", 0, 0, 300, Delta.getDelta("beginning")));
 			else if (enemyGenerate < 0.3)
-				enemy.add(new Enemy(this, "red_box", "red_box", 0, 0, 300));
+				enemy.add(new Enemy(this, "red_box", 0, 0, 400, Delta.getDelta("beginning")));
 			Enemy lastEnemy = enemy.get(enemy.size()-1);
 
 			lastEnemy.setX(lastEnemy.generateEnemyX());
@@ -451,9 +462,26 @@ public class Game {
 			Delta.setLastEnemy(Delta.getTime());
 		}
 
+		//checks to see if enemy bullets should be generated
+		for (int i = 0; i < enemy.size(); i++){
+			if (enemy.get(i).getName().equals("red_box") && enemy.get(i).getTimeSinceLastBullet() >= 700){
+				enemy_bullet.add(new Bullet(this, "enemy_bullet", 0, 0, 100));
+				enemy.get(i).setLastBulletTime(Delta.getDelta("beginning"));
+
+				Bullet lastEnemyBullet = enemy_bullet.get(enemy_bullet.size()-1);
+				Sprite enemySprite = enemy.get(i).getSprite();
+				Sprite enemyBulletSprite = lastEnemyBullet.getSprite();
+
+				lastEnemyBullet.setX(enemy.get(i).getX()+enemySprite.getWidth()/2-enemyBulletSprite.getWidth()/2);
+				lastEnemyBullet.setY(enemy.get(i).getY()+enemySprite.getHeight()/2-enemyBulletSprite.getHeight()/2);
+			}
+		}
+
 		//checks for collisions
 		for (int i = 0; i < enemy.size(); i++){
 			Entity entity1 = enemy.get(i);
+
+			//if a bullet collides with an enemy
 			for (int j = 0; j < bullet.size(); j++){
 				Entity entity2 = bullet.get(j);
 
@@ -462,13 +490,26 @@ public class Game {
 					entity2.collidedWith(entity1);
 				}
 			}
+
 			Entity entity2 = player;
+
+			//if the player collides with an enemy
 			if (entity1.collidesWith(entity2)){
 				entity1.collidedWith(entity2);
 				entity2.collidedWith(entity1);
 			}
 		}
 		Entity entity1 = player;
+		//if an enemy bullet collides with the player
+		for (int i = 0; i < enemy_bullet.size(); i++){
+			Entity entity2 = enemy_bullet.get(i);
+
+			if (entity1.collidesWith(entity2)){
+				entity1.collidedWith(entity2);
+				entity2.collidedWith(entity1);
+			}
+		}
+		//if a powerup collides with the player
 		for (int i = 0; i < powerup.size(); i++){
 			Entity entity2 = powerup.get(i);
 
@@ -495,7 +536,7 @@ public class Game {
 			player.setY(Display.getHeight()-player.getSprite().getHeight());
 	}
 
-	/* Renders the background, the score, and all of the sprites */
+	/* Renders the background, text, and all of the sprites */
 	@SuppressWarnings("unchecked")
 	private void render(){
 		//clear the screen and depth buffer
@@ -504,9 +545,25 @@ public class Game {
 		//draws the background
 		drawScreen(background);
 
-		//draw score
-		font.drawString(10, 10, "Score: " + score);
-
+		//drawing player
+		if (!stopDrawingPlayer)
+			drawEntity(player);
+		//drawing bullets
+		drawListEntity(bullet);
+		//drawing enemy bullets
+		drawListEntity(enemy_bullet);
+		//drawing enemies
+		drawListEntity(enemy);
+		//drawing powerups
+		drawListEntity(powerup);
+		//drawing explosions
+		drawListEntity(explosion);
+		
+		//draw health
+		font.drawString(10, 10, "Health: " + player.getHP());
+		//draw cash
+		font.drawString(10, 40, "Cash: $" + cash);
+		
 		if (stopDrawingPlayer){
 			//setup fonts
 			awtFont = new java.awt.Font("/res/Judson.ttf", java.awt.Font.BOLD, 80);
@@ -522,18 +579,6 @@ public class Game {
 			font.drawString(displayWidth/2-font.getWidth("Game Over!")/2,
 					displayHeight/2-font.getHeight("Game Over!")/2, "Game Over!");
 		}
-
-		//drawing player
-		if (!stopDrawingPlayer)
-			drawEntity(player);
-		//drawing bullets
-		drawListEntity(bullet);
-		//drawing enemies
-		drawListEntity(enemy);
-		//drawing powerups
-		drawListEntity(powerup);
-		//drawing explosions
-		drawListEntity(explosion);
 	}
 
 	/* Draws an entity */
@@ -568,16 +613,35 @@ public class Game {
 			//if the entity is still in the screen, update its position
 			if (ent.continueDrawing()){
 				if (ent instanceof Bullet){
-					ent.setX(ent.getX()+((Bullet) ent).getXChange());
-					ent.setY(ent.getY()+((Bullet) ent).getYChange());
-					//ent.setY(ent.getY()-delta);
+					if (((Bullet)ent).getName().equals("bullet")){
+						ent.setX(ent.getX()+((Bullet) ent).getXChange());
+						ent.setY(ent.getY()+((Bullet) ent).getYChange());
+					}
+					if (((Bullet)ent).getName().equals("enemy_bullet")){
+						ent.setY(ent.getY()+delta/2);
+					}
 				}
-				else if (ent instanceof Enemy && ((Enemy)ent).getName().equals("green_box"))
-					ent.setY(ent.getY()+delta/3);
-				else if (ent instanceof Enemy && ((Enemy)ent).getName().equals("red_box"))
-					ent.setY(ent.getY()+delta/2);
-				else if (ent instanceof Powerup)
+				else if (ent instanceof Enemy){
+					if (((Enemy)ent).getName().equals("green_box")){
+						ent.setY(ent.getY()+delta/3);
+					}
+					if (((Enemy)ent).getName().equals("red_box")){
+						ent.setY(ent.getY()+delta/4);
+					}
+				}
+				else if (ent instanceof Explosion){
+					if (((Explosion) ent).getName().equals("player_hit")){
+						ent.setX(((Explosion)ent).getEntity().getX());
+						ent.setY(((Explosion)ent).getEntity().getY());
+					}
+					else if (((Explosion) ent).getName().equals("enemy_hit")){
+						ent.setX(((Explosion)ent).getEntity().getX()-5);
+						ent.setY(((Explosion)ent).getEntity().getY()-5);
+					}
+				}
+				else if (ent instanceof Powerup){
 					ent.setY(ent.getY()+delta/4);
+				}
 			}
 			//else if the entity is outside of the screen, remove it
 			else{
@@ -624,7 +688,7 @@ public class Game {
 
 	/* Randomly generates a number between 100 and 3000 to determine the number of milliseconds between each enemy */
 	public int generateEnemyInterval(){
-		enemyInterval = randomGenerator.nextInt(2901)+100;
+		enemyInterval = randomGenerator.nextInt(2901)+300;
 
 		return enemyInterval;
 	}
@@ -638,70 +702,65 @@ public class Game {
 	public void powerupCheck(int x, int y){
 		//checks to see if a powerup will drop
 		double powerupCheck = randomGenerator.nextDouble();
-		if (powerupCheck <= 0.15){
-			double powerupGenerate = randomGenerator.nextDouble();
-			boolean powerupCreated = false;
-
-			while (!powerupCreated){
-				if (powerupGenerate < 0.7 && !doubleShot){
-					powerup.add(new Powerup(this, "powerup_doubleshot", "doubleshot", x, y));
-					powerupCreated = true;
-				}
-				else if (powerupGenerate >= 0.7){
-					powerup.add(new Powerup(this, "powerup_explosion", "explosion", x, y));
-					powerupCreated = true;
-				}
-				else{
-					powerupGenerate = randomGenerator.nextDouble();
-				}
-			}
-		}
+		if (powerupCheck <= 0.1 && !doubleShot)
+			powerup.add(new Powerup(this, "powerup_doubleshot", "doubleshot", x, y));
+		else if (powerupCheck <= 0.1)
+			powerup.add(new Powerup(this, "powerup_explosion", "explosion", x, y));
 	}
 
 	/* Registers a hit */
 	public void registerHit(Entity entity){
 		if (entity instanceof Enemy){
-			explosion.add(new Explosion(this, "enemy_hit", "enemy_hit", entity.getX()-5, entity.getY()-5));
+			explosion.add(new Explosion(this, "enemy_hit", "enemy_hit", entity.getX()-5, entity.getY()-5, entity));
+		}
+		else if (entity instanceof Player){
+			playerHitEffect.playAsSoundEffect(1.0f, 2.0f, false);
+			explosion.add(new Explosion(this, "player_hit", "player_hit", entity.getX(), entity.getY(), entity));
 		}
 	}
 
 	/* Removes an entity */
 	public void removeEntity(Entity entity){
 		if (entity instanceof Bullet){
-			bullet.remove(entity);
+			if (((Bullet) entity).getName().equals("bullet")){
+				bullet.remove(entity);
+			}
+			else if (((Bullet) entity).getName().equals("enemy_bullet")){
+				enemy_bullet.remove(entity);
+			}
 		}
 		else if (entity instanceof Enemy){
 			int enemyX = entity.getX();
 			int enemyY = entity.getY();
 			enemy.remove(entity);
-			
+
 			//play enemy explosion sfx
 			enemyExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);
-			
-			explosion.add(new Explosion(this, "enemy_explosion", "explosion", enemyX-5, enemyY-5));
+
+			explosion.add(new Explosion(this, "enemy_explosion", "explosion", enemyX-5, enemyY-5, entity));
 			powerupCheck(enemyX, enemyY);
 			if (!stopDrawingPlayer && ((Enemy) entity).getName().equals("green_box"))
-				score += 10;
+				cash += 10;
 			else if (!stopDrawingPlayer && ((Enemy) entity).getName().equals("red_box"))
-				score += 20;
+				cash += 30;
 		}
 		else if (entity instanceof Powerup){
 			//play obtain powerup sfx
 			powerupGetEffect.playAsSoundEffect(1.0f, 2.0f, false);
-			
+
 			powerup.remove(entity);
 			if (((Powerup)entity).getName() == "doubleshot"){
 				doubleShot = true;
 			}
 			else if (((Powerup)entity).getName() == "explosion"){
 				for (int i = 0; i < enemy.size(); i++){
-					explosion.add(new Explosion(this, "enemy_explosion", "explosion", enemy.get(i).getX()-5, enemy.get(i).getY()-5));
+					explosion.add(new Explosion(this, "enemy_explosion", "explosion", enemy.get(i).getX()-5, enemy.get(i).getY()-5, entity));
 				}
 				for (int i = 0; i < enemy.size(); i++){
 					if (enemy.get(i).getName().equals("green_box"))
-						score += 10;
+						cash += 10;
 					else if (enemy.get(i).getName().equals("red_box"))
-						score += 20;
+						cash += 30;
 				}
 				//play enemy explosion sfx
 				enemyExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);
@@ -711,8 +770,8 @@ public class Game {
 		else if (entity instanceof Player){
 			//play player explosion sfx
 			playerExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);
-			
-			explosion.add(new Explosion(this, "player_explosion", "explosion", player.getX()-5, player.getY()-5));
+
+			explosion.add(new Explosion(this, "player_explosion", "explosion", player.getX()-5, player.getY()-5, entity));
 			stopDrawingPlayer = true;
 		}
 	}

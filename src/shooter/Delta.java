@@ -6,6 +6,7 @@ public class Delta {
 	private static long lastFrame;
 	private static long lastBullet;
 	private static long lastEnemy;
+	private static long lastEnemyBullet;
 	private static long beginningTime = getTime();
 	
 	/* Gets the time in milliseconds */
@@ -27,12 +28,20 @@ public class Delta {
 		else if (name.equals("bullet")){
 			lastDelta = lastBullet;
 		}
+		else if (name.equals("enemy_bullet")){
+			lastDelta = lastEnemyBullet;
+		}
 		else if (name.equals("beginning")){
 			lastDelta = beginningTime;
 		}
 		
 		int delta = (int) (time - lastDelta);
 		return delta;
+	}
+	
+	/* Sets the beginning time */
+	public static void setBeginningTime(long time){
+		beginningTime = time;
 	}
 	
 	/* Sets lastBullet */
@@ -43,5 +52,10 @@ public class Delta {
 	/* Sets lastEnemy */
 	public static void setLastEnemy(long lastEnemy){
 		Delta.lastEnemy = lastEnemy;
+	}
+	
+	/* Sets lastEnemyBullet */
+	public static void setLastEnemyBullet(long lastEnemyBullet){
+		Delta.lastEnemyBullet = lastEnemyBullet;
 	}
 }

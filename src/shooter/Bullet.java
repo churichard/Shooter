@@ -53,7 +53,7 @@ public class Bullet extends Entity{
 
 	/* This bullet has collided with another entity */
 	public void collidedWith(Entity other){
-		if (name.equals("bullet") && other instanceof Enemy){
+		if ((name.equals("bullet") || name.equals("laser")) && other instanceof Enemy){
 			((Enemy) other).reduceHP(atk);
 			game.removeEntity(this);
 		}

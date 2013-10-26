@@ -38,7 +38,7 @@ public class Player extends Entity{
 	/* This player has collided with another entity */
 	public void collidedWith(Entity other){
 		if (other instanceof Enemy){
-			this.reduceHP(200);
+			this.reduceHP(((Enemy) other).getATK());
 			((Enemy) other).reduceHP(500);
 		}
 	}

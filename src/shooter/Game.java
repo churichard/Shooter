@@ -1,5 +1,6 @@
 /*
  * Programmed by Richard Chu
+ * Thanks for looking at my code! :)
  */
 package shooter;
 
@@ -36,7 +37,6 @@ public class Game {
 	private UnicodeFont font;
 
 	/* Delta */
-	private int delta; //delta
 	private int bulletDelta; //time since the last bullet
 	private int enemyDelta; //time since the last enemy
 
@@ -48,6 +48,7 @@ public class Game {
 	private Sprite titleScreen;
 	private Sprite instructScreen;
 	private Sprite creditsScreen;
+	private Sprite shopScreen;
 
 	/* Sound */
 	private Audio shootEffect; //shoot sfx
@@ -55,6 +56,8 @@ public class Game {
 	private Audio playerExplosionEffect; //player explosion sfx
 	private Audio powerupGetEffect; //obtain powerup sfx
 	private Audio playerHitEffect; //player hit sfx
+	private Audio shopBuyEffect; //the sfx that plays when you buy from the shop
+	private Audio laserEffect; //laser shooting sfx
 
 	/* ArrayLists */
 	private ArrayList<Bullet> bullet = new ArrayList<Bullet>(); //Bullet ArrayList
@@ -68,7 +71,7 @@ public class Game {
 	private int initPlayerY = 502;
 
 	/* Bullet */
-	//Shooting speed
+	//Bullet
 	private int shootingSpeed = 150; //can shoot a bullet every 150 ms
 	//First bullet offset
 	private int BULLET_X_OFFSET = (int)(-57/1.3);
@@ -94,8 +97,10 @@ public class Game {
 	//Number between 100 and 2000 that determines the number of milliseconds between each enemy
 	private int enemyInterval;
 
-	/* Powerups */
+	/* Weapons */
+	private boolean bulletShot = true;
 	private boolean doubleShot = false;
+	private boolean laserShot = false;
 
 	/* Cash */
 	private int cash = 0;
@@ -168,8 +173,10 @@ public class Game {
 		//cash and totalCash are 0
 		cash = 0;
 		totalCash = 0;
-		//doubleshot is false
+		//bullet is activated, upgraded weapons are not activated
+		bulletShot = true;
 		doubleShot = false;
+		laserShot = false;
 		//setup fonts
 		awtFont = new java.awt.Font("/res/ConsolaMono.ttf", java.awt.Font.BOLD, 20);
 		font = new UnicodeFont(awtFont);
@@ -182,22 +189,22 @@ public class Game {
 		}
 
 		//if the play button is not clicked
-		while(!Mouse.isButtonDown(0) || !(Mouse.getX() >= 249 && Mouse.getX() <= 539
-				&& Mouse.getY() <= (Display.getHeight()-215) && Mouse.getY() >= (Display.getHeight()-284))){
+		while (!Mouse.isButtonDown(0) || !(Mouse.getX() >= 249 && Mouse.getX() <= 539
+				&& Mouse.getY() <= (displayHeight-215) && Mouse.getY() >= (displayHeight-284))){
 			//draw title screen
 			drawScreen(titleScreen);
 
 			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539
-					&& Mouse.getY() <= (Display.getHeight()-304) && Mouse.getY() >= (Display.getHeight()-373)){
+					&& Mouse.getY() <= (displayHeight-304) && Mouse.getY() >= (displayHeight-373)){
 				showInstructScreen();
 			}
 
 			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539
-					&& Mouse.getY() <= (Display.getHeight()-393) && Mouse.getY() >= (Display.getHeight()-462)){
+					&& Mouse.getY() <= (displayHeight-393) && Mouse.getY() >= (displayHeight-462)){
 				showCreditsScreen();
 			}
 			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539
-					&& Mouse.getY() <= (Display.getHeight()-482) && Mouse.getY() >= (Display.getHeight()-551)){
+					&& Mouse.getY() <= (displayHeight-482) && Mouse.getY() >= (displayHeight-551)){
 				Display.destroy();
 				AL.destroy();
 				System.exit(0);
@@ -214,7 +221,7 @@ public class Game {
 	/* Displays the instructions screen */
 	private void showInstructScreen(){
 		while (!Mouse.isButtonDown(0) || !(Mouse.getX() >= 643 && Mouse.getX() <= 758
-				&& Mouse.getY() <= (Display.getHeight()-494) && Mouse.getY() >= (Display.getHeight()-562))){
+				&& Mouse.getY() <= (displayHeight-494) && Mouse.getY() >= (displayHeight-562))){
 			//draw instructions screen
 			drawScreen(instructScreen);
 
@@ -226,7 +233,7 @@ public class Game {
 	/* Displays the credits screen */
 	private void showCreditsScreen(){
 		while (!Mouse.isButtonDown(0) || !(Mouse.getX() >= 643 && Mouse.getX() <= 758
-				&& Mouse.getY() <= (Display.getHeight()-494) && Mouse.getY() >= (Display.getHeight()-562))){
+				&& Mouse.getY() <= (displayHeight-494) && Mouse.getY() >= (displayHeight-562))){
 			//draw credits screen
 			drawScreen(creditsScreen);
 
@@ -235,9 +242,57 @@ public class Game {
 		}
 	}
 
+	/* Displays the shop screen */
+	private void showShopScreen(){
+		while (!Mouse.isButtonDown(0) || !(Mouse.getX() >= 643 && Mouse.getX() <= 758
+				&& Mouse.getY() <= (displayHeight-494) && Mouse.getY() >= (displayHeight-562))){
+			//draw shop screen
+			drawScreen(shopScreen);
+
+			while (Mouse.next()){
+				if (!doubleShot && cash >= 500 && !Mouse.getEventButtonState() && Mouse.getEventButton() == 0
+						&& Mouse.getX() >= 278 && Mouse.getX() <= 382
+						&& Mouse.getY() <= (displayHeight-207) && Mouse.getY() >= (displayHeight-259)){
+					bulletShot = true;
+					doubleShot = true;
+					laserShot = false;
+					cash -= 500;
+					shopBuyEffect.playAsSoundEffect(1.0f, 1.0f, false);
+				}
+
+				if (!laserShot && cash >= 1000 && !Mouse.getEventButtonState() && Mouse.getEventButton() == 0
+						&& Mouse.getX() >= 278 && Mouse.getX() <= 382
+						&& Mouse.getY() <= (displayHeight-319) && Mouse.getY() >= (displayHeight-371)){
+					bulletShot = false;
+					doubleShot = false;
+					laserShot = true;
+					cash -= 1000;
+					shopBuyEffect.playAsSoundEffect(1.0f, 1.0f, false);
+				}
+
+				if (player.getHP() < 1000 && cash >= 100 && !Mouse.getEventButtonState() && Mouse.getEventButton() == 0
+						&& Mouse.getX() >= 680 && Mouse.getX() <= 784
+						&& Mouse.getY() <= (displayHeight-207) && Mouse.getY() >= (displayHeight-259)){
+					player.setHP(player.getHP()+100);
+					if (player.getHP() > 1000)
+						player.setHP(1000);
+					cash -= 100;
+					shopBuyEffect.playAsSoundEffect(1.0f, 1.0f, false);
+				}
+			}
+
+			//draw health
+			font.drawString(13, displayHeight-70, "Health: " + player.getHP());
+			//draw cash
+			font.drawString(13, displayHeight-40, "Cash: $" + cash);
+
+			//update display
+			updateDisplay();
+		}
+	}
+
 	/* Updates delta values */
 	private void updateDelta(){
-		delta = Delta.getDelta("frame");
 		bulletDelta = Delta.getDelta("bullet");
 		enemyDelta = Delta.getDelta("enemy");
 	}
@@ -267,7 +322,7 @@ public class Game {
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
-		glOrtho(0, Display.getWidth(), Display.getHeight(), 0, 1, -1);
+		glOrtho(0, displayWidth, displayHeight, 0, 1, -1);
 		glMatrixMode(GL_MODELVIEW);
 	}
 
@@ -297,6 +352,11 @@ public class Game {
 		creditsScreen.setWidth(creditsScreen.getTexture().getImageWidth());
 		creditsScreen.setHeight(creditsScreen.getTexture().getImageHeight());
 
+		//initialize the shop screen sprite
+		shopScreen = getSprite("shop_screen");
+		shopScreen.setWidth(shopScreen.getTexture().getImageWidth());
+		shopScreen.setHeight(shopScreen.getTexture().getImageHeight());
+
 		//initialize sound
 		try {
 			//shoot sfx
@@ -309,6 +369,10 @@ public class Game {
 			powerupGetEffect = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/powerup_get.wav"));
 			//player hit sfx
 			playerHitEffect = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/player_hit.wav"));
+			//shop buy sfx
+			shopBuyEffect = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/shop_buy.wav"));
+			//laser sfx
+			laserEffect = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/laser.wav"));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -355,12 +419,20 @@ public class Game {
 		}
 		else
 			dKeyDown = false;
-		//check to see if the left mouse button is down and the time since the last bullet is at least 100 milliseconds
-		if (Mouse.isButtonDown(0) && bulletDelta > shootingSpeed){
+		//check to see if the left mouse button is down
+		if (Mouse.isButtonDown(0)){
 			mouseDown = true;
 		}
 		else
 			mouseDown = false;
+		//check to see if the h button is pressed and shows the shop screen if so
+		if (Keyboard.isKeyDown(Keyboard.KEY_H)){
+			showShopScreen();
+		}
+		//check to see if the esc button is pressed; if so, go to title screen
+		if (Keyboard.isKeyDown(Keyboard.KEY_ESCAPE)){
+			showTitleScreen();
+		}
 	}
 
 	/* Checks to see if the display is active or if it has been closed and updates it */
@@ -387,19 +459,19 @@ public class Game {
 	private void update(){
 		//checks to see if the w key is down
 		if (wKeyDown){
-			player.setY((int)(player.getY()-0.5*delta));
+			player.setY((int)(player.getY()-8));
 		}
 		//checks to see if the a key is down
 		if (aKeyDown){
-			player.setX((int)(player.getX()-0.5*delta));
+			player.setX((int)(player.getX()-8));
 		}
 		//checks to see if the s key is down
 		if (sKeyDown){
-			player.setY((int)(player.getY()+0.5*delta));
+			player.setY((int)(player.getY()+8));
 		}
 		//checks to see if the d key is down
 		if (dKeyDown){
-			player.setX((int)(player.getX()+0.5*delta));
+			player.setX((int)(player.getX()+8));
 		}
 
 		//checks to make sure the player is within the bounds
@@ -407,54 +479,76 @@ public class Game {
 
 		//checks to see if the left mouse button is clicked
 		if (mouseDown){
-			//play the shoot sound
-			shootEffect.playAsSoundEffect(1.0f, 0.5f, false);
+			//if a bullet is shot and the time since the last bullet is at least shootingSpeed
+			if (bulletShot && bulletDelta > shootingSpeed){
+				//plays the bullet shooting sound
+				shootEffect.playAsSoundEffect(1.0f, 0.5f, false);
 
-			bullet.add(new Bullet(this, "bullet", 0, 0, 100));
-			Bullet lastBullet = bullet.get(bullet.size()-1);
-			Sprite playerSprite = player.getSprite();
-			Sprite bulletSprite = lastBullet.getSprite();
-
-			//sets the x and y coordinates of the bullet
-			lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET_X_OFFSET);
-			lastBullet.setY(player.getY()+playerSprite.getHeight()-bulletSprite.getHeight()/2+BULLET_Y_OFFSET);
-
-			//set the angle of the shot
-			double xChange = Mouse.getX() - lastBullet.getX();
-			double yChange = (Display.getHeight()-Mouse.getY()) - lastBullet.getY();
-			double magnitude = Math.sqrt(xChange*xChange+yChange*yChange);
-			xChange = xChange/magnitude * 20;
-			yChange = yChange/magnitude * 20;
-			lastBullet.setXChange((int) xChange);
-			lastBullet.setYChange((int) yChange);
-
-			//if the doubleshot powerup is activated
-			if (doubleShot){
+				//adds the bullet
 				bullet.add(new Bullet(this, "bullet", 0, 0, 100));
-				lastBullet = bullet.get(bullet.size()-1);
+				Bullet lastBullet = bullet.get(bullet.size()-1);
+				Sprite playerSprite = player.getSprite();
+				Sprite bulletSprite = lastBullet.getSprite();
 
-				lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET2_X_OFFSET);
-				lastBullet.setY(player.getY()+playerSprite.getHeight()-bulletSprite.getHeight()/2+BULLET2_Y_OFFSET);
+				//sets the x and y coordinates of the bullet
+				lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET_X_OFFSET);
+				lastBullet.setY(player.getY()+playerSprite.getHeight()-bulletSprite.getHeight()/2+BULLET_Y_OFFSET);
 
 				//set the angle of the shot
-				double doubleshotXChange = Mouse.getX() - lastBullet.getX();
-				double doubleshotYChange = (Display.getHeight()-Mouse.getY()) - lastBullet.getY();
-				double doubleshotMagnitude = Math.sqrt(xChange*xChange+yChange*yChange);
-				doubleshotXChange = xChange/doubleshotMagnitude * 20;
-				doubleshotYChange = yChange/doubleshotMagnitude * 20;
-				lastBullet.setXChange((int) doubleshotXChange);
-				lastBullet.setYChange((int) doubleshotYChange);
+				double xChange = Mouse.getX() - lastBullet.getX();
+				double yChange = (displayHeight-Mouse.getY()) - lastBullet.getY();
+				double magnitude = Math.sqrt(xChange*xChange+yChange*yChange);
+				xChange = xChange/magnitude * 20;
+				yChange = yChange/magnitude * 20;
+				lastBullet.setXChange((int) xChange);
+				lastBullet.setYChange((int) yChange);
+
+				//if doubleshot is activated
+				if (doubleShot){
+					//adds the bullet
+					bullet.add(new Bullet(this, "bullet", 0, 0, 100));
+					lastBullet = bullet.get(bullet.size()-1);
+
+					lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET2_X_OFFSET);
+					lastBullet.setY(player.getY()+playerSprite.getHeight()-bulletSprite.getHeight()/2+BULLET2_Y_OFFSET);
+
+					//set the angle of the shot
+					double doubleshotXChange = Mouse.getX() - lastBullet.getX();
+					double doubleshotYChange = (displayHeight-Mouse.getY()) - lastBullet.getY();
+					double doubleshotMagnitude = Math.sqrt(xChange*xChange+yChange*yChange);
+					doubleshotXChange = xChange/doubleshotMagnitude * 20;
+					doubleshotYChange = yChange/doubleshotMagnitude * 20;
+					lastBullet.setXChange((int) doubleshotXChange);
+					lastBullet.setYChange((int) doubleshotYChange);
+				}
+				Delta.setLastBullet(Delta.getTime());
 			}
-			Delta.setLastBullet(Delta.getTime());
+			//if a laser is shot
+			else if (laserShot){
+				if (Delta.getTime() % 6 == 0){
+					//plays the laser shooting sound
+					laserEffect.playAsSoundEffect(1.0f, 0.5f, false);
+				}
+
+				//adds the laser
+				bullet.add(new Bullet(this, "laser", 0, 0, 20));
+				Bullet lastBullet = bullet.get(bullet.size()-1);
+				Sprite playerSprite = player.getSprite();
+				Sprite bulletSprite = lastBullet.getSprite();
+
+				//sets the x and y coordinates of the laser
+				lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET_X_OFFSET);
+				lastBullet.setY(player.getY()+playerSprite.getHeight()-bulletSprite.getHeight()+BULLET_Y_OFFSET);
+			}
 		}
 
 		//checks to see if the time since the last enemy is greater than the enemy interval
 		if (enemyDelta > generateEnemyInterval()){
 			double enemyGenerate = randomGenerator.nextDouble();
 			if (enemyGenerate >= 0.3 || Delta.getDelta("beginning") <= 3000)
-				enemy.add(new Enemy(this, "green_box", 0, 0, 300, Delta.getDelta("beginning")));
+				enemy.add(new Enemy(this, "green_box", 0, 0, 300, Delta.getDelta("beginning"), 300));
 			else if (enemyGenerate < 0.3)
-				enemy.add(new Enemy(this, "red_box", 0, 0, 400, Delta.getDelta("beginning")));
+				enemy.add(new Enemy(this, "red_box", 0, 0, 400, Delta.getDelta("beginning"), 400));
 			Enemy lastEnemy = enemy.get(enemy.size()-1);
 
 			lastEnemy.setX(lastEnemy.generateEnemyX());
@@ -526,14 +620,14 @@ public class Game {
 		if (player.getX() < 0)
 			player.setX(0);
 		//checks to see if playerX is greater than the width of the display
-		if (player.getX() > Display.getWidth()-player.getSprite().getWidth())
-			player.setX(Display.getWidth()-player.getSprite().getWidth());
+		if (player.getX() > displayWidth-player.getSprite().getWidth())
+			player.setX(displayWidth-player.getSprite().getWidth());
 		//checks to see if playerY is lower than the bottom of the display
 		if (player.getY() < 0)
 			player.setY(0);
 		//checks to see if playerY is greater than the height of the display
-		if (player.getY() > Display.getHeight()-player.getSprite().getHeight())
-			player.setY(Display.getHeight()-player.getSprite().getHeight());
+		if (player.getY() > displayHeight-player.getSprite().getHeight())
+			player.setY(displayHeight-player.getSprite().getHeight());
 	}
 
 	/* Renders the background, text, and all of the sprites */
@@ -558,12 +652,14 @@ public class Game {
 		drawListEntity(powerup);
 		//drawing explosions
 		drawListEntity(explosion);
-		
+
 		//draw health
 		font.drawString(10, 10, "Health: " + player.getHP());
 		//draw cash
 		font.drawString(10, 40, "Cash: $" + cash);
-		
+		//draw shop prompt
+		font.drawString(displayWidth-220, displayHeight-40, "Press H to enter shop");
+
 		if (stopDrawingPlayer){
 			//setup fonts
 			awtFont = new java.awt.Font("/res/Judson.ttf", java.awt.Font.BOLD, 80);
@@ -577,7 +673,20 @@ public class Game {
 			}
 			//draw Game Over
 			font.drawString(displayWidth/2-font.getWidth("Game Over!")/2,
-					displayHeight/2-font.getHeight("Game Over!")/2, "Game Over!");
+					displayHeight/2-font.getHeight("Game Over!")/2-50, "Game Over!");
+
+			//setup fonts
+			awtFont = new java.awt.Font("/res/Judson.ttf", java.awt.Font.BOLD, 40);
+			font = new UnicodeFont(awtFont);
+			font.getEffects().add(new ColorEffect(java.awt.Color.white));
+			font.addAsciiGlyphs();
+			try{
+				font.loadGlyphs();
+			} catch (SlickException e){
+				e.printStackTrace();
+			}
+			font.drawString(displayWidth/2-font.getWidth("Score: " + totalCash)/2,
+					displayHeight/2+font.getHeight("Game Over!")/2+font.getHeight("Score: " + totalCash)/2+10-50, "Score: " + totalCash);
 		}
 	}
 
@@ -618,15 +727,18 @@ public class Game {
 						ent.setY(ent.getY()+((Bullet) ent).getYChange());
 					}
 					if (((Bullet)ent).getName().equals("enemy_bullet")){
-						ent.setY(ent.getY()+delta/2);
+						ent.setY(ent.getY()+8);
+					}
+					if (((Bullet)ent).getName().equals("laser")){
+						listRemove.add(list.get(i));
 					}
 				}
 				else if (ent instanceof Enemy){
 					if (((Enemy)ent).getName().equals("green_box")){
-						ent.setY(ent.getY()+delta/3);
+						ent.setY(ent.getY()+5);
 					}
 					if (((Enemy)ent).getName().equals("red_box")){
-						ent.setY(ent.getY()+delta/4);
+						ent.setY(ent.getY()+3);
 					}
 				}
 				else if (ent instanceof Explosion){
@@ -640,7 +752,7 @@ public class Game {
 					}
 				}
 				else if (ent instanceof Powerup){
-					ent.setY(ent.getY()+delta/4);
+					ent.setY(ent.getY()+4);
 				}
 			}
 			//else if the entity is outside of the screen, remove it
@@ -702,9 +814,7 @@ public class Game {
 	public void powerupCheck(int x, int y){
 		//checks to see if a powerup will drop
 		double powerupCheck = randomGenerator.nextDouble();
-		if (powerupCheck <= 0.1 && !doubleShot)
-			powerup.add(new Powerup(this, "powerup_doubleshot", "doubleshot", x, y));
-		else if (powerupCheck <= 0.1)
+		if (powerupCheck <= 0.05)
 			powerup.add(new Powerup(this, "powerup_explosion", "explosion", x, y));
 	}
 
@@ -739,28 +849,33 @@ public class Game {
 
 			explosion.add(new Explosion(this, "enemy_explosion", "explosion", enemyX-5, enemyY-5, entity));
 			powerupCheck(enemyX, enemyY);
-			if (!stopDrawingPlayer && ((Enemy) entity).getName().equals("green_box"))
+			if (!stopDrawingPlayer && ((Enemy) entity).getName().equals("green_box")){
 				cash += 10;
-			else if (!stopDrawingPlayer && ((Enemy) entity).getName().equals("red_box"))
+				totalCash += 10;
+			}
+			else if (!stopDrawingPlayer && ((Enemy) entity).getName().equals("red_box")){
 				cash += 30;
+				totalCash += 30;
+			}
 		}
 		else if (entity instanceof Powerup){
 			//play obtain powerup sfx
-			powerupGetEffect.playAsSoundEffect(1.0f, 2.0f, false);
+			powerupGetEffect.playAsSoundEffect(1.0f, 1.0f, false);
 
 			powerup.remove(entity);
-			if (((Powerup)entity).getName() == "doubleshot"){
-				doubleShot = true;
-			}
-			else if (((Powerup)entity).getName() == "explosion"){
+			if (((Powerup)entity).getName() == "explosion"){
 				for (int i = 0; i < enemy.size(); i++){
 					explosion.add(new Explosion(this, "enemy_explosion", "explosion", enemy.get(i).getX()-5, enemy.get(i).getY()-5, entity));
 				}
 				for (int i = 0; i < enemy.size(); i++){
-					if (enemy.get(i).getName().equals("green_box"))
+					if (enemy.get(i).getName().equals("green_box")){
 						cash += 10;
-					else if (enemy.get(i).getName().equals("red_box"))
+						totalCash += 10;
+					}
+					else if (enemy.get(i).getName().equals("red_box")){
 						cash += 30;
+						totalCash += 30;
+					}
 				}
 				//play enemy explosion sfx
 				enemyExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);

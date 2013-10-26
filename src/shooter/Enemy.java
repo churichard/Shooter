@@ -13,15 +13,18 @@ public class Enemy extends Entity{
 	private int HP;
 	//time the enemy was created
 	private long lastBulletTime;
+	//the damage the enemy deals when the player hits it
+	private int atk;
 
 	/* Constructor - gets the enemy sprite */
-	public Enemy(Game game, String ref, int x, int y, int HP, long lastBulletTime){
+	public Enemy(Game game, String ref, int x, int y, int HP, long lastBulletTime, int atk){
 		super(game.getSprite(ref), x, y);
 
 		this.game = game;
 		this.name = ref;
 		this.HP = HP;
 		this.lastBulletTime = lastBulletTime;
+		this.atk = atk;
 	}
 
 	/* Generates the enemy x position */
@@ -42,6 +45,11 @@ public class Enemy extends Entity{
 		}
 		else
 			game.registerHit(this);
+	}
+	
+	/* Returns the atk value of the enemy */
+	public int getATK(){
+		return atk;
 	}
 	
 	/* Returns the name of the enemy */

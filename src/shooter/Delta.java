@@ -3,7 +3,6 @@ package shooter;
 import org.lwjgl.Sys;
 
 public class Delta {
-	private static long lastFrame;
 	private static long lastBullet;
 	private static long lastEnemy;
 	private static long lastEnemyBullet;
@@ -16,13 +15,10 @@ public class Delta {
 	
 	/* Finds the change in time since the last frame/enemy/bullet */
 	public static int getDelta(String name){
-		long lastDelta = lastFrame;
+		long lastDelta = 0;
 		long time = getTime();
-		if (name.equals("frame")){
-			lastDelta = lastFrame;
-			lastFrame = time;
-		}
-		else if (name.equals("enemy")){
+		
+		if (name.equals("enemy")){
 			lastDelta = lastEnemy;
 		}
 		else if (name.equals("bullet")){

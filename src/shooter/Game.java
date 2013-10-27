@@ -58,6 +58,8 @@ public class Game {
 	private Audio playerHitEffect; //player hit sfx
 	private Audio shopBuyEffect; //the sfx that plays when you buy from the shop
 	private Audio laserEffect; //laser shooting sfx
+	private Audio bossExplosionEffect; //boss explosion sfx
+	private Audio bossExplosionEffect2; //boss explosion 2 sfx
 
 	/* ArrayLists */
 	private ArrayList<Bullet> bullet = new ArrayList<Bullet>(); //Bullet ArrayList
@@ -66,13 +68,20 @@ public class Game {
 	private ArrayList<Powerup> powerup = new ArrayList<Powerup>(); //Powerup ArrayList
 	private ArrayList<Explosion> explosion = new ArrayList<Explosion>(); //Explosion ArrayList
 
+	/* Boss */
+	private boolean bossSpawned = false;
+	private int bossMovement = 3;
+	private int bossExplosionNum = 0;
+
 	/* Player initial position */
 	private int initPlayerX = displayWidth/2-30;
 	private int initPlayerY = 502;
 
 	/* Bullet */
 	//Bullet
-	private int shootingSpeed = 150; //can shoot a bullet every 150 ms
+	private int bulletShootingSpeed = 150; //can shoot a bullet every 150 ms
+	//Doubleshot
+	private int doubleShotShootingSpeed = 270; //can shoot a doubleshot every 270 ms
 	//First bullet offset
 	private int BULLET_X_OFFSET = (int)(-57/1.3);
 	private int BULLET_Y_OFFSET = (int)(-85/1.3);
@@ -109,6 +118,8 @@ public class Game {
 	/* Game over */
 	//true if the player should stop being drawn
 	private boolean stopDrawingPlayer = false;
+	//true if the game has been won
+	private boolean gameWon = false;
 	//true if the game is over
 	private boolean gameOver = false;
 
@@ -132,7 +143,7 @@ public class Game {
 			}
 			//temp code for game overs
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(2500);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -164,6 +175,7 @@ public class Game {
 		//the game is not over
 		gameOver = false;
 		stopDrawingPlayer = false;
+		gameWon = false;
 		//clears the entity arraylists
 		enemy.clear();
 		bullet.clear();
@@ -177,6 +189,10 @@ public class Game {
 		bulletShot = true;
 		doubleShot = false;
 		laserShot = false;
+		//boss
+		bossSpawned = false;
+		bossMovement = 3;
+		bossExplosionNum = 0;
 		//setup fonts
 		awtFont = new java.awt.Font("/res/ConsolaMono.ttf", java.awt.Font.BOLD, 20);
 		font = new UnicodeFont(awtFont);
@@ -250,26 +266,26 @@ public class Game {
 			drawScreen(shopScreen);
 
 			while (Mouse.next()){
-				if (!doubleShot && cash >= 500 && !Mouse.getEventButtonState() && Mouse.getEventButton() == 0
+				if (!laserShot && cash >= 500 && !Mouse.getEventButtonState() && Mouse.getEventButton() == 0
 						&& Mouse.getX() >= 278 && Mouse.getX() <= 382
 						&& Mouse.getY() <= (displayHeight-207) && Mouse.getY() >= (displayHeight-259)){
-					bulletShot = true;
-					doubleShot = true;
-					laserShot = false;
-					cash -= 500;
-					shopBuyEffect.playAsSoundEffect(1.0f, 1.0f, false);
-				}
-
-				if (!laserShot && cash >= 1000 && !Mouse.getEventButtonState() && Mouse.getEventButton() == 0
-						&& Mouse.getX() >= 278 && Mouse.getX() <= 382
-						&& Mouse.getY() <= (displayHeight-319) && Mouse.getY() >= (displayHeight-371)){
 					bulletShot = false;
 					doubleShot = false;
 					laserShot = true;
+					cash -= 500;
+					shopBuyEffect.playAsSoundEffect(1.0f, 1.0f, false);
+				}
+				
+				if (!doubleShot && cash >= 1000 && !Mouse.getEventButtonState() && Mouse.getEventButton() == 0
+						&& Mouse.getX() >= 278 && Mouse.getX() <= 382
+						&& Mouse.getY() <= (displayHeight-319) && Mouse.getY() >= (displayHeight-371)){
+					bulletShot = false;
+					doubleShot = true;
+					laserShot = false;
 					cash -= 1000;
 					shopBuyEffect.playAsSoundEffect(1.0f, 1.0f, false);
 				}
-
+				
 				if (player.getHP() < 1000 && cash >= 100 && !Mouse.getEventButtonState() && Mouse.getEventButton() == 0
 						&& Mouse.getX() >= 680 && Mouse.getX() <= 784
 						&& Mouse.getY() <= (displayHeight-207) && Mouse.getY() >= (displayHeight-259)){
@@ -282,7 +298,7 @@ public class Game {
 			}
 
 			//draw health
-			font.drawString(13, displayHeight-70, "Health: " + player.getHP());
+			font.drawString(13, displayHeight-70, "Health: " + player.getHP() + "/1000");
 			//draw cash
 			font.drawString(13, displayHeight-40, "Cash: $" + cash);
 
@@ -373,6 +389,10 @@ public class Game {
 			shopBuyEffect = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/shop_buy.wav"));
 			//laser sfx
 			laserEffect = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/laser.wav"));
+			//boss explosion sfx
+			bossExplosionEffect = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/boss_explosion.wav"));
+			//boss explosion 2 sfx
+			bossExplosionEffect2 = AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/boss_explosion2.wav"));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -425,8 +445,8 @@ public class Game {
 		}
 		else
 			mouseDown = false;
-		//check to see if the h button is pressed and shows the shop screen if so
-		if (Keyboard.isKeyDown(Keyboard.KEY_H)){
+		//check to see if the F button is pressed and shows the shop screen if so
+		if (Keyboard.isKeyDown(Keyboard.KEY_F)){
 			showShopScreen();
 		}
 		//check to see if the esc button is pressed; if so, go to title screen
@@ -456,6 +476,7 @@ public class Game {
 	}
 
 	/* Checks to see if a key is pressed */
+	@SuppressWarnings("unchecked")
 	private void update(){
 		//checks to see if the w key is down
 		if (wKeyDown){
@@ -479,8 +500,50 @@ public class Game {
 
 		//checks to see if the left mouse button is clicked
 		if (mouseDown){
+			//if doubleshot is activated
+			if (doubleShot && bulletDelta > doubleShotShootingSpeed){
+				//plays the bullet shooting sound
+				shootEffect.playAsSoundEffect(1.0f, 0.5f, false);
+
+				//adds the first bullet
+				bullet.add(new Bullet(this, "bullet", 0, 0, 100));
+				Bullet lastBullet = bullet.get(bullet.size()-1);
+				Sprite playerSprite = player.getSprite();
+				Sprite bulletSprite = lastBullet.getSprite();
+
+				//sets the x and y coordinates of the bullet
+				lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET_X_OFFSET);
+				lastBullet.setY(player.getY()+playerSprite.getHeight()-bulletSprite.getHeight()/2+BULLET_Y_OFFSET);
+
+				//set the angle of the shot
+				double xChange = Mouse.getX() - lastBullet.getX();
+				double yChange = (displayHeight-Mouse.getY()) - lastBullet.getY();
+				double magnitude = Math.sqrt(xChange*xChange+yChange*yChange);
+				xChange = xChange/magnitude * 20;
+				yChange = yChange/magnitude * 20;
+				lastBullet.setXChange((int) xChange);
+				lastBullet.setYChange((int) yChange);
+
+				//adds the second bullet
+				bullet.add(new Bullet(this, "bullet", 0, 0, 100));
+				lastBullet = bullet.get(bullet.size()-1);
+
+				lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET2_X_OFFSET);
+				lastBullet.setY(player.getY()+playerSprite.getHeight()-bulletSprite.getHeight()/2+BULLET2_Y_OFFSET);
+
+				//set the angle of the shot
+				double doubleshotXChange = Mouse.getX() - lastBullet.getX();
+				double doubleshotYChange = (displayHeight-Mouse.getY()) - lastBullet.getY();
+				double doubleshotMagnitude = Math.sqrt(xChange*xChange+yChange*yChange);
+				doubleshotXChange = xChange/doubleshotMagnitude * 20;
+				doubleshotYChange = yChange/doubleshotMagnitude * 20;
+				lastBullet.setXChange((int) doubleshotXChange);
+				lastBullet.setYChange((int) doubleshotYChange);
+
+				Delta.setLastBullet(Delta.getTime());
+			}
 			//if a bullet is shot and the time since the last bullet is at least shootingSpeed
-			if (bulletShot && bulletDelta > shootingSpeed){
+			else if (bulletShot && bulletDelta > bulletShootingSpeed){
 				//plays the bullet shooting sound
 				shootEffect.playAsSoundEffect(1.0f, 0.5f, false);
 
@@ -503,24 +566,6 @@ public class Game {
 				lastBullet.setXChange((int) xChange);
 				lastBullet.setYChange((int) yChange);
 
-				//if doubleshot is activated
-				if (doubleShot){
-					//adds the bullet
-					bullet.add(new Bullet(this, "bullet", 0, 0, 100));
-					lastBullet = bullet.get(bullet.size()-1);
-
-					lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET2_X_OFFSET);
-					lastBullet.setY(player.getY()+playerSprite.getHeight()-bulletSprite.getHeight()/2+BULLET2_Y_OFFSET);
-
-					//set the angle of the shot
-					double doubleshotXChange = Mouse.getX() - lastBullet.getX();
-					double doubleshotYChange = (displayHeight-Mouse.getY()) - lastBullet.getY();
-					double doubleshotMagnitude = Math.sqrt(xChange*xChange+yChange*yChange);
-					doubleshotXChange = xChange/doubleshotMagnitude * 20;
-					doubleshotYChange = yChange/doubleshotMagnitude * 20;
-					lastBullet.setXChange((int) doubleshotXChange);
-					lastBullet.setYChange((int) doubleshotYChange);
-				}
 				Delta.setLastBullet(Delta.getTime());
 			}
 			//if a laser is shot
@@ -543,9 +588,9 @@ public class Game {
 		}
 
 		//checks to see if the time since the last enemy is greater than the enemy interval
-		if (enemyDelta > generateEnemyInterval()){
+		if (!bossSpawned && enemyDelta > generateEnemyInterval()){
 			double enemyGenerate = randomGenerator.nextDouble();
-			if (enemyGenerate >= 0.3 || Delta.getDelta("beginning") <= 3000)
+			if (enemyGenerate >= 0.3 || Delta.getDelta("beginning") <= 10000)
 				enemy.add(new Enemy(this, "green_box", 0, 0, 300, Delta.getDelta("beginning"), 300));
 			else if (enemyGenerate < 0.3)
 				enemy.add(new Enemy(this, "red_box", 0, 0, 400, Delta.getDelta("beginning"), 400));
@@ -556,61 +601,171 @@ public class Game {
 			Delta.setLastEnemy(Delta.getTime());
 		}
 
-		//checks to see if enemy bullets should be generated
-		for (int i = 0; i < enemy.size(); i++){
-			if (enemy.get(i).getName().equals("red_box") && enemy.get(i).getTimeSinceLastBullet() >= 700){
-				enemy_bullet.add(new Bullet(this, "enemy_bullet", 0, 0, 100));
-				enemy.get(i).setLastBulletTime(Delta.getDelta("beginning"));
+		if (bossExplosionNum == 0){
+			//checks to see if enemy bullets should be generated
+			for (int i = 0; i < enemy.size(); i++){
+				if (enemy.get(i).getName().equals("red_box") && enemy.get(i).getTimeSinceLastBullet() >= 700){
+					enemy_bullet.add(new Bullet(this, "enemy_bullet", 0, 0, 100));
+					enemy.get(i).setLastBulletTime(Delta.getDelta("beginning"));
 
-				Bullet lastEnemyBullet = enemy_bullet.get(enemy_bullet.size()-1);
-				Sprite enemySprite = enemy.get(i).getSprite();
-				Sprite enemyBulletSprite = lastEnemyBullet.getSprite();
+					Bullet lastEnemyBullet = enemy_bullet.get(enemy_bullet.size()-1);
+					Sprite enemySprite = enemy.get(i).getSprite();
+					Sprite enemyBulletSprite = lastEnemyBullet.getSprite();
 
-				lastEnemyBullet.setX(enemy.get(i).getX()+enemySprite.getWidth()/2-enemyBulletSprite.getWidth()/2);
-				lastEnemyBullet.setY(enemy.get(i).getY()+enemySprite.getHeight()/2-enemyBulletSprite.getHeight()/2);
+					lastEnemyBullet.setX(enemy.get(i).getX()+enemySprite.getWidth()/2-enemyBulletSprite.getWidth()/2);
+					lastEnemyBullet.setY(enemy.get(i).getY()+enemySprite.getHeight()/2-enemyBulletSprite.getHeight()/2);
+				}
+
+				if (enemy.get(i).getName().equals("boss") && enemy.get(i).getTimeSinceLastBullet() >= 1000){
+					enemy_bullet.add(new Bullet(this, "boss_bullet", 0, 0, 100));
+					enemy.get(i).setLastBulletTime(Delta.getDelta("beginning"));
+
+					Bullet lastEnemyBullet = enemy_bullet.get(enemy_bullet.size()-1);
+					Sprite enemySprite = enemy.get(i).getSprite();
+					Sprite enemyBulletSprite = lastEnemyBullet.getSprite();
+
+					lastEnemyBullet.setX(enemy.get(i).getX()+enemySprite.getWidth()/2-enemyBulletSprite.getWidth()/2);
+					lastEnemyBullet.setY(enemy.get(i).getY()+enemySprite.getHeight()/2-enemyBulletSprite.getHeight()/2);
+
+					//set the angle of the shot
+					double xChange = player.getX() - lastEnemyBullet.getX();
+					double yChange = player.getY() - lastEnemyBullet.getY();
+					double magnitude = Math.sqrt(xChange*xChange+yChange*yChange);
+					xChange = xChange/magnitude * 15;
+					yChange = yChange/magnitude * 15;
+					lastEnemyBullet.setXChange((int) xChange);
+					lastEnemyBullet.setYChange((int) yChange);
+					
+					
+					enemy_bullet.add(new Bullet(this, "boss_bullet", 0, 0, 100));
+					enemy.get(i).setLastBulletTime(Delta.getDelta("beginning"));
+
+					lastEnemyBullet = enemy_bullet.get(enemy_bullet.size()-1);
+					enemySprite = enemy.get(i).getSprite();
+					enemyBulletSprite = lastEnemyBullet.getSprite();
+
+					lastEnemyBullet.setX(enemy.get(i).getX()+enemySprite.getWidth()/2-enemyBulletSprite.getWidth()/2);
+					lastEnemyBullet.setY(enemy.get(i).getY()+enemySprite.getHeight()/2-enemyBulletSprite.getHeight()/2);
+
+					//set the angle of the shot
+					xChange = player.getX() - lastEnemyBullet.getX() - 100;
+					yChange = player.getY() - lastEnemyBullet.getY() - 100;
+					magnitude = Math.sqrt(xChange*xChange+yChange*yChange);
+					xChange = xChange/magnitude * 15;
+					yChange = yChange/magnitude * 15;
+					lastEnemyBullet.setXChange((int) xChange);
+					lastEnemyBullet.setYChange((int) yChange);
+					
+					
+					enemy_bullet.add(new Bullet(this, "boss_bullet", 0, 0, 100));
+					enemy.get(i).setLastBulletTime(Delta.getDelta("beginning"));
+
+					lastEnemyBullet = enemy_bullet.get(enemy_bullet.size()-1);
+					enemySprite = enemy.get(i).getSprite();
+					enemyBulletSprite = lastEnemyBullet.getSprite();
+
+					lastEnemyBullet.setX(enemy.get(i).getX()+enemySprite.getWidth()/2-enemyBulletSprite.getWidth()/2);
+					lastEnemyBullet.setY(enemy.get(i).getY()+enemySprite.getHeight()/2-enemyBulletSprite.getHeight()/2);
+
+					//set the angle of the shot
+					xChange = player.getX() - lastEnemyBullet.getX() + 100;
+					yChange = player.getY() - lastEnemyBullet.getY() + 100;
+					magnitude = Math.sqrt(xChange*xChange+yChange*yChange);
+					xChange = xChange/magnitude * 15;
+					yChange = yChange/magnitude * 15;
+					lastEnemyBullet.setXChange((int) xChange);
+					lastEnemyBullet.setYChange((int) yChange);
+				}
 			}
 		}
 
-		//checks for collisions
-		for (int i = 0; i < enemy.size(); i++){
-			Entity entity1 = enemy.get(i);
+		//spawns the boss if 60 seconds has passed
+		if (Delta.getDelta("beginning") >= 60000 && !bossSpawned){
+			bossSpawned = true;
+			enemy.add(new Enemy(this, "boss", 0, 0, 10000, Delta.getDelta("beginning"), 500));
 
-			//if a bullet collides with an enemy
-			for (int j = 0; j < bullet.size(); j++){
-				Entity entity2 = bullet.get(j);
+			Enemy boss = enemy.get(enemy.size()-1);
+			boss.setX(displayWidth/2-boss.getSprite().getWidth()/2);
+			boss.setY(-boss.getSprite().getHeight());
+		}
+
+		//checks for collisions
+		if (bossExplosionNum == 0){
+			for (int i = 0; i < enemy.size(); i++){
+				Entity entity1 = enemy.get(i);
+
+				//if a bullet collides with an enemy
+				for (int j = 0; j < bullet.size(); j++){
+					Entity entity2 = bullet.get(j);
+
+					if (entity1.collidesWith(entity2)){
+						entity1.collidedWith(entity2);
+						entity2.collidedWith(entity1);
+					}
+				}
+
+				Entity entity2 = player;
+
+				//if the player collides with an enemy
+				if (entity1.collidesWith(entity2)){
+					entity1.collidedWith(entity2);
+					entity2.collidedWith(entity1);
+				}
+			}
+			Entity entity1 = player;
+			//if an enemy bullet collides with the player
+			for (int i = 0; i < enemy_bullet.size(); i++){
+				Entity entity2 = enemy_bullet.get(i);
 
 				if (entity1.collidesWith(entity2)){
 					entity1.collidedWith(entity2);
 					entity2.collidedWith(entity1);
 				}
 			}
+			//if a powerup collides with the player
+			for (int i = 0; i < powerup.size(); i++){
+				Entity entity2 = powerup.get(i);
 
-			Entity entity2 = player;
-
-			//if the player collides with an enemy
-			if (entity1.collidesWith(entity2)){
-				entity1.collidedWith(entity2);
-				entity2.collidedWith(entity1);
+				if (entity1.collidesWith(entity2)){
+					entity1.collidedWith(entity2);
+					entity2.collidedWith(entity1);
+				}
 			}
 		}
-		Entity entity1 = player;
-		//if an enemy bullet collides with the player
-		for (int i = 0; i < enemy_bullet.size(); i++){
-			Entity entity2 = enemy_bullet.get(i);
 
-			if (entity1.collidesWith(entity2)){
-				entity1.collidedWith(entity2);
-				entity2.collidedWith(entity1);
+		//if the player has defeated the boss
+		if (gameWon && bossSpawned){
+			//setup fonts for Congratulations text
+			awtFont = new java.awt.Font("/res/Judson.ttf", java.awt.Font.BOLD, 30);
+			font = new UnicodeFont(awtFont);
+			font.getEffects().add(new ColorEffect(java.awt.Color.white));
+			font.addAsciiGlyphs();
+			try{
+				font.loadGlyphs();
+			} catch (SlickException e){
+				e.printStackTrace();
 			}
-		}
-		//if a powerup collides with the player
-		for (int i = 0; i < powerup.size(); i++){
-			Entity entity2 = powerup.get(i);
+			//draw Congratulations
+			String congrats = "Congratulations! You were able to vanquish";
+			String congrats2 = "all of your evil thoughts and achieve nirvana!";
+			font.drawString(displayWidth/2-font.getWidth(congrats)/2,
+					displayHeight/2-font.getHeight(congrats)/2-50, congrats);
+			font.drawString(displayWidth/2-font.getWidth(congrats2)/2,
+					displayHeight/2-font.getHeight(congrats2)/2-15, congrats2);
 
-			if (entity1.collidesWith(entity2)){
-				entity1.collidedWith(entity2);
-				entity2.collidedWith(entity1);
+			//setup fonts for the score
+			awtFont = new java.awt.Font("/res/Judson.ttf", java.awt.Font.BOLD, 40);
+			font = new UnicodeFont(awtFont);
+			font.getEffects().add(new ColorEffect(java.awt.Color.white));
+			font.addAsciiGlyphs();
+			try{
+				font.loadGlyphs();
+			} catch (SlickException e){
+				e.printStackTrace();
 			}
+			//draw the score
+			font.drawString(displayWidth/2-font.getWidth("Score: " + totalCash)/2,
+					displayHeight/2+font.getHeight("Game Over!")/2+font.getHeight("Score: " + totalCash)/2+10-50, "Score: " + totalCash);
 		}
 	}
 
@@ -636,6 +791,17 @@ public class Game {
 		//clear the screen and depth buffer
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		//sets up the font
+		awtFont = new java.awt.Font("/res/ConsolaMono.ttf", java.awt.Font.BOLD, 20);
+		font = new UnicodeFont(awtFont);
+		font.getEffects().add(new ColorEffect(java.awt.Color.white));
+		font.addAsciiGlyphs();
+		try{
+			font.loadGlyphs();
+		} catch (SlickException e){
+			e.printStackTrace();
+		}
+
 		//draws the background
 		drawScreen(background);
 
@@ -654,14 +820,14 @@ public class Game {
 		drawListEntity(explosion);
 
 		//draw health
-		font.drawString(10, 10, "Health: " + player.getHP());
+		font.drawString(10, 10, "Health: " + player.getHP() + "/1000");
 		//draw cash
 		font.drawString(10, 40, "Cash: $" + cash);
 		//draw shop prompt
-		font.drawString(displayWidth-220, displayHeight-40, "Press H to enter shop");
+		font.drawString(displayWidth-220, displayHeight-40, "Press F to enter shop");
 
 		if (stopDrawingPlayer){
-			//setup fonts
+			//setup fonts for Game Over text
 			awtFont = new java.awt.Font("/res/Judson.ttf", java.awt.Font.BOLD, 80);
 			font = new UnicodeFont(awtFont);
 			font.getEffects().add(new ColorEffect(java.awt.Color.white));
@@ -675,7 +841,7 @@ public class Game {
 			font.drawString(displayWidth/2-font.getWidth("Game Over!")/2,
 					displayHeight/2-font.getHeight("Game Over!")/2-50, "Game Over!");
 
-			//setup fonts
+			//setup fonts for the score
 			awtFont = new java.awt.Font("/res/Judson.ttf", java.awt.Font.BOLD, 40);
 			font = new UnicodeFont(awtFont);
 			font.getEffects().add(new ColorEffect(java.awt.Color.white));
@@ -685,6 +851,7 @@ public class Game {
 			} catch (SlickException e){
 				e.printStackTrace();
 			}
+			//draw the score
 			font.drawString(displayWidth/2-font.getWidth("Score: " + totalCash)/2,
 					displayHeight/2+font.getHeight("Game Over!")/2+font.getHeight("Score: " + totalCash)/2+10-50, "Score: " + totalCash);
 		}
@@ -732,6 +899,10 @@ public class Game {
 					if (((Bullet)ent).getName().equals("laser")){
 						listRemove.add(list.get(i));
 					}
+					if (((Bullet)ent).getName().equals("boss_bullet")){
+						ent.setX(ent.getX()+((Bullet) ent).getXChange());
+						ent.setY(ent.getY()+((Bullet) ent).getYChange());
+					}
 				}
 				else if (ent instanceof Enemy){
 					if (((Enemy)ent).getName().equals("green_box")){
@@ -739,6 +910,16 @@ public class Game {
 					}
 					if (((Enemy)ent).getName().equals("red_box")){
 						ent.setY(ent.getY()+3);
+					}
+					if (((Enemy)ent).getName().equals("boss") && bossExplosionNum == 0){
+						if (ent.getX() <= 0)
+							bossMovement = 3;
+						if (ent.getX() >= displayWidth-((Enemy)ent).getSprite().getWidth())
+							bossMovement = -3;
+						if (ent.getY() <= 30)
+							ent.setY(ent.getY()+1);
+						else
+							ent.setX(ent.getX()+bossMovement);
 					}
 				}
 				else if (ent instanceof Explosion){
@@ -758,11 +939,60 @@ public class Game {
 			//else if the entity is outside of the screen, remove it
 			else{
 				listRemove.add(list.get(i));
+
+				if (bossExplosionNum >= 1 && ((Entity)list.get(i)) instanceof Explosion
+						&& (((Explosion)list.get(i)).getName().equals("enemy_explosion")
+								|| ((Explosion)list.get(i)).getName().equals("boss_explosion"))){
+					Entity entity = ((Explosion)list.get(i)).getEntity();
+					int enemyX = entity.getX();
+					int enemyY = entity.getY();
+					Sprite bossSprite = ((Enemy) entity).getSprite();
+
+					if (bossExplosionNum == 1){
+						bossExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);
+						explosion.add(new Explosion(this, "enemy_explosion", enemyX, enemyY, entity));
+						Explosion lastExplosion = explosion.get(explosion.size()-1);
+						lastExplosion.setX(enemyX+bossSprite.getWidth()-lastExplosion.getSprite().getWidth());
+
+						bossExplosionNum = 2;
+					}
+					else if (bossExplosionNum == 2){
+						bossExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);
+						explosion.add(new Explosion(this, "enemy_explosion", enemyX, enemyY, entity));
+						Explosion lastExplosion = explosion.get(explosion.size()-1);
+						lastExplosion.setY(enemyY+bossSprite.getHeight()-lastExplosion.getSprite().getHeight());
+
+						bossExplosionNum = 3;
+					}
+					else if (bossExplosionNum == 3){
+						bossExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);
+						explosion.add(new Explosion(this, "enemy_explosion", enemyX, enemyY, entity));
+						Explosion lastExplosion = explosion.get(explosion.size()-1);
+						lastExplosion.setX(enemyX+bossSprite.getWidth()-lastExplosion.getSprite().getWidth());
+						lastExplosion.setY(enemyY+bossSprite.getHeight()-lastExplosion.getSprite().getHeight());
+
+						bossExplosionNum = 4;
+					}
+					else if (bossExplosionNum == 4){
+						//large boss explosion
+						bossExplosionEffect2.playAsSoundEffect(1.0f, 1.0f, false);
+						explosion.add(new Explosion(this, "boss_explosion", enemyX, enemyY, entity));
+						Explosion lastExplosion = explosion.get(explosion.size()-1);
+						lastExplosion.setX(enemyX+entity.getSprite().getWidth()/2-lastExplosion.getSprite().getWidth()/2+45);
+						lastExplosion.setY(enemyY+entity.getSprite().getHeight()/2-lastExplosion.getSprite().getWidth()/2+30);
+
+						bossExplosionNum = 5;
+					}
+					else if (bossExplosionNum == 5){
+						listRemove.add(entity);
+						gameWon = true;
+					}
+				}
 			}
 
 			//if the player is dead, notify the player of death
-			if (stopDrawingPlayer){
-				notifyDeath();
+			if (stopDrawingPlayer || gameWon){
+				notifyGameOver();
 			}
 		}
 		for (int i = 0; i < listRemove.size(); i++){
@@ -814,18 +1044,21 @@ public class Game {
 	public void powerupCheck(int x, int y){
 		//checks to see if a powerup will drop
 		double powerupCheck = randomGenerator.nextDouble();
-		if (powerupCheck <= 0.05)
+		if (powerupCheck <= 0.07)
 			powerup.add(new Powerup(this, "powerup_explosion", "explosion", x, y));
 	}
 
 	/* Registers a hit */
 	public void registerHit(Entity entity){
-		if (entity instanceof Enemy){
-			explosion.add(new Explosion(this, "enemy_hit", "enemy_hit", entity.getX()-5, entity.getY()-5, entity));
+		if (entity instanceof Enemy && !((Enemy) entity).getName().equals("boss")){
+			explosion.add(new Explosion(this, "enemy_hit", entity.getX()-5, entity.getY()-5, entity));
 		}
 		else if (entity instanceof Player){
 			playerHitEffect.playAsSoundEffect(1.0f, 2.0f, false);
-			explosion.add(new Explosion(this, "player_hit", "player_hit", entity.getX(), entity.getY(), entity));
+			explosion.add(new Explosion(this, "player_hit", entity.getX(), entity.getY(), entity));
+		}
+		else if (entity instanceof Enemy && ((Enemy) entity).getName().equals("boss")){
+			explosion.add(new Explosion(this, "boss_hit", entity.getX()-5, entity.getY()-5, entity));
 		}
 	}
 
@@ -835,64 +1068,88 @@ public class Game {
 			if (((Bullet) entity).getName().equals("bullet")){
 				bullet.remove(entity);
 			}
-			else if (((Bullet) entity).getName().equals("enemy_bullet")){
+			else if (((Bullet) entity).getName().equals("enemy_bullet") || ((Bullet) entity).getName().equals("boss_bullet")){
 				enemy_bullet.remove(entity);
 			}
 		}
 		else if (entity instanceof Enemy){
 			int enemyX = entity.getX();
 			int enemyY = entity.getY();
-			enemy.remove(entity);
 
-			//play enemy explosion sfx
-			enemyExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);
+			if (!((Enemy) entity).getName().equals("boss")){
+				enemy.remove(entity);
+				//play enemy explosion sfx
+				enemyExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);
 
-			explosion.add(new Explosion(this, "enemy_explosion", "explosion", enemyX-5, enemyY-5, entity));
-			powerupCheck(enemyX, enemyY);
-			if (!stopDrawingPlayer && ((Enemy) entity).getName().equals("green_box")){
-				cash += 10;
-				totalCash += 10;
+				//add enemy explosion
+				explosion.add(new Explosion(this, "enemy_explosion", enemyX-5, enemyY-5, entity));
+				powerupCheck(enemyX, enemyY);
 			}
-			else if (!stopDrawingPlayer && ((Enemy) entity).getName().equals("red_box")){
+			else if (((Enemy) entity).getName().equals("boss") && bossExplosionNum == 0){
+				bossExplosionNum = 1;
+
+				bossExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);
+				explosion.add(new Explosion(this, "enemy_explosion", enemyX, enemyY, entity));
+			}
+
+			//add cash and points to score
+			if (!stopDrawingPlayer && ((Enemy) entity).getName().equals("green_box")){
 				cash += 30;
 				totalCash += 30;
+			}
+			else if (!stopDrawingPlayer && ((Enemy) entity).getName().equals("red_box")){
+				cash += 50;
+				totalCash += 50;
+			}
+			else if (!stopDrawingPlayer && ((Enemy) entity).getName().equals("boss")){
+				totalCash += 500;
 			}
 		}
 		else if (entity instanceof Powerup){
 			//play obtain powerup sfx
 			powerupGetEffect.playAsSoundEffect(1.0f, 1.0f, false);
 
+			Enemy boss = null;
+
 			powerup.remove(entity);
 			if (((Powerup)entity).getName() == "explosion"){
 				for (int i = 0; i < enemy.size(); i++){
-					explosion.add(new Explosion(this, "enemy_explosion", "explosion", enemy.get(i).getX()-5, enemy.get(i).getY()-5, entity));
+					if (!enemy.get(i).getName().equals("boss")){
+						explosion.add(new Explosion(this, "enemy_explosion", enemy.get(i).getX()-5, enemy.get(i).getY()-5, entity));
+					}
+					else{
+						boss = enemy.get(i);
+					}
 				}
 				for (int i = 0; i < enemy.size(); i++){
 					if (enemy.get(i).getName().equals("green_box")){
-						cash += 10;
-						totalCash += 10;
-					}
-					else if (enemy.get(i).getName().equals("red_box")){
 						cash += 30;
 						totalCash += 30;
+					}
+					else if (enemy.get(i).getName().equals("red_box")){
+						cash += 50;
+						totalCash += 50;
 					}
 				}
 				//play enemy explosion sfx
 				enemyExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);
 				enemy.clear();
+
+				if (boss != null)
+					enemy.add(boss);
 			}
 		}
 		else if (entity instanceof Player){
 			//play player explosion sfx
 			playerExplosionEffect.playAsSoundEffect(1.0f, 1.0f, false);
 
-			explosion.add(new Explosion(this, "player_explosion", "explosion", player.getX()-5, player.getY()-5, entity));
+			explosion.add(new Explosion(this, "player_explosion", player.getX()-5, player.getY()-5, entity));
 			stopDrawingPlayer = true;
 		}
 	}
 
-	/* Notifies the player that they died */
-	public void notifyDeath(){
+	/* Notifies the player that the game is over */
+	public void notifyGameOver(){
 		gameOver = true;
 	}
 

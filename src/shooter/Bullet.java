@@ -57,7 +57,7 @@ public class Bullet extends Entity{
 			((Enemy) other).reduceHP(atk);
 			game.removeEntity(this);
 		}
-		else if (name.equals("enemy_bullet") && other instanceof Player){
+		else if ((name.equals("enemy_bullet") || name.equals("boss_bullet")) && other instanceof Player){
 			((Player) other).reduceHP(atk);
 			game.removeEntity(this);
 		}

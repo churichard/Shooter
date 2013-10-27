@@ -39,7 +39,8 @@ public class Player extends Entity{
 	public void collidedWith(Entity other){
 		if (other instanceof Enemy){
 			this.reduceHP(((Enemy) other).getATK());
-			((Enemy) other).reduceHP(500);
+			if (!((Enemy) other).getName().equals("boss"))
+				((Enemy) other).reduceHP(500);
 		}
 	}
 }

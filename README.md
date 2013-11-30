@@ -1,3 +1,3 @@
 Shooter
 =======
-This is a simple 2D shoot 'em up game that I'm working on for experience with libraries, graphics and sound in the Java programming language. It's mostly just for fun, though; enjoy! :)
+This is a simple 2D shoot 'em up game that I'm working on for experience with libraries, graphics and sound in the Java programming language.

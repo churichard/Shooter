@@ -49,6 +49,23 @@ public class Game {
 	private Sprite instructScreen;
 	private Sprite creditsScreen;
 	private Sprite shopScreen;
+	
+	/* Sprites */
+	private Sprite bossSprite;
+	private Sprite bossBulletSprite;
+	private Sprite bossExplosionSprite;
+	private Sprite bossHitSprite;
+	private Sprite bulletSprite;
+	private Sprite enemyBulletSprite;
+	private Sprite enemyExplosionSprite;
+	private Sprite enemyHitSprite;
+	private Sprite greenBoxSprite;
+	private Sprite laserSprite;
+	private Sprite playerSprite;
+	private Sprite playerExplosionSprite;
+	private Sprite playerHitSprite;
+	private Sprite powerupExplosionSprite;
+	private Sprite redBoxSprite;
 
 	/* Sound */
 	private Audio shootEffect; //shoot sfx
@@ -141,7 +158,7 @@ public class Game {
 				update();
 				updateDisplay();
 			}
-			//temp code for game overs
+			//Game Over
 			try {
 				Thread.sleep(2500);
 			} catch (InterruptedException e) {
@@ -275,7 +292,7 @@ public class Game {
 					cash -= 500;
 					shopBuyEffect.playAsSoundEffect(1.0f, 1.0f, false);
 				}
-				
+
 				if (!doubleShot && cash >= 1000 && !Mouse.getEventButtonState() && Mouse.getEventButton() == 0
 						&& Mouse.getX() >= 278 && Mouse.getX() <= 382
 						&& Mouse.getY() <= (displayHeight-319) && Mouse.getY() >= (displayHeight-371)){
@@ -285,7 +302,7 @@ public class Game {
 					cash -= 1000;
 					shopBuyEffect.playAsSoundEffect(1.0f, 1.0f, false);
 				}
-				
+
 				if (player.getHP() < 1000 && cash >= 100 && !Mouse.getEventButtonState() && Mouse.getEventButton() == 0
 						&& Mouse.getX() >= 680 && Mouse.getX() <= 784
 						&& Mouse.getY() <= (displayHeight-207) && Mouse.getY() >= (displayHeight-259)){
@@ -349,29 +366,46 @@ public class Game {
 		player = new Player(this, "player", initPlayerX, initPlayerY, 1000);
 
 		//initialize the background sprite
-		background = getSprite("background");
+		background = new Sprite("background");
 		background.setWidth(background.getTexture().getImageWidth());
 		background.setHeight(background.getTexture().getImageHeight());
 
 		//initialize the title screen sprite
-		titleScreen = getSprite("title_screen");
+		titleScreen = new Sprite("title_screen");
 		titleScreen.setWidth(titleScreen.getTexture().getImageWidth());
 		titleScreen.setHeight(titleScreen.getTexture().getImageHeight());
 
 		//initialize the instructions screen sprite
-		instructScreen = getSprite("instructions_screen");
+		instructScreen = new Sprite("instructions_screen");
 		instructScreen.setWidth(instructScreen.getTexture().getImageWidth());
 		instructScreen.setHeight(instructScreen.getTexture().getImageHeight());
 
 		//initialize the credits screen sprite
-		creditsScreen = getSprite("credits_screen");
+		creditsScreen = new Sprite("credits_screen");
 		creditsScreen.setWidth(creditsScreen.getTexture().getImageWidth());
 		creditsScreen.setHeight(creditsScreen.getTexture().getImageHeight());
 
 		//initialize the shop screen sprite
-		shopScreen = getSprite("shop_screen");
+		shopScreen = new Sprite("shop_screen");
 		shopScreen.setWidth(shopScreen.getTexture().getImageWidth());
 		shopScreen.setHeight(shopScreen.getTexture().getImageHeight());
+		
+		//initialize other sprites
+		bossSprite = new Sprite("boss");
+		bossBulletSprite = new Sprite("boss_bullet");
+		bossExplosionSprite = new Sprite("boss_explosion");
+		bossHitSprite = new Sprite("boss_hit");
+		bulletSprite = new Sprite("bullet");
+		enemyBulletSprite = new Sprite("enemy_bullet");
+		enemyExplosionSprite = new Sprite("enemy_explosion");
+		enemyHitSprite = new Sprite("enemy_hit");
+		greenBoxSprite = new Sprite("green_box");
+		laserSprite = new Sprite("laser");
+		playerSprite = new Sprite("player");
+		playerExplosionSprite = new Sprite("player_explosion");
+		playerHitSprite = new Sprite("player_hit");
+		powerupExplosionSprite = new Sprite("powerup_explosion");
+		redBoxSprite = new Sprite("red_box");
 
 		//initialize sound
 		try {
@@ -508,8 +542,6 @@ public class Game {
 				//adds the first bullet
 				bullet.add(new Bullet(this, "bullet", 0, 0, 100));
 				Bullet lastBullet = bullet.get(bullet.size()-1);
-				Sprite playerSprite = player.getSprite();
-				Sprite bulletSprite = lastBullet.getSprite();
 
 				//sets the x and y coordinates of the bullet
 				lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET_X_OFFSET);
@@ -550,8 +582,6 @@ public class Game {
 				//adds the bullet
 				bullet.add(new Bullet(this, "bullet", 0, 0, 100));
 				Bullet lastBullet = bullet.get(bullet.size()-1);
-				Sprite playerSprite = player.getSprite();
-				Sprite bulletSprite = lastBullet.getSprite();
 
 				//sets the x and y coordinates of the bullet
 				lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET_X_OFFSET);
@@ -578,8 +608,6 @@ public class Game {
 				//adds the laser
 				bullet.add(new Bullet(this, "laser", 0, 0, 20));
 				Bullet lastBullet = bullet.get(bullet.size()-1);
-				Sprite playerSprite = player.getSprite();
-				Sprite bulletSprite = lastBullet.getSprite();
 
 				//sets the x and y coordinates of the laser
 				lastBullet.setX(player.getX()+playerSprite.getWidth()-bulletSprite.getWidth()/2+BULLET_X_OFFSET);
@@ -635,8 +663,8 @@ public class Game {
 					yChange = yChange/magnitude * 15;
 					lastEnemyBullet.setXChange((int) xChange);
 					lastEnemyBullet.setYChange((int) yChange);
-					
-					
+
+
 					enemy_bullet.add(new Bullet(this, "boss_bullet", 0, 0, 100));
 					enemy.get(i).setLastBulletTime(Delta.getDelta("beginning"));
 
@@ -655,8 +683,8 @@ public class Game {
 					yChange = yChange/magnitude * 15;
 					lastEnemyBullet.setXChange((int) xChange);
 					lastEnemyBullet.setYChange((int) yChange);
-					
-					
+
+
 					enemy_bullet.add(new Bullet(this, "boss_bullet", 0, 0, 100));
 					enemy.get(i).setLastBulletTime(Delta.getDelta("beginning"));
 
@@ -775,14 +803,14 @@ public class Game {
 		if (player.getX() < 0)
 			player.setX(0);
 		//checks to see if playerX is greater than the width of the display
-		if (player.getX() > displayWidth-player.getSprite().getWidth())
-			player.setX(displayWidth-player.getSprite().getWidth());
+		if (player.getX() > displayWidth-playerSprite.getWidth())
+			player.setX(displayWidth-playerSprite.getWidth());
 		//checks to see if playerY is lower than the bottom of the display
 		if (player.getY() < 0)
 			player.setY(0);
 		//checks to see if playerY is greater than the height of the display
-		if (player.getY() > displayHeight-player.getSprite().getHeight())
-			player.setY(displayHeight-player.getSprite().getHeight());
+		if (player.getY() > displayHeight-playerSprite.getHeight())
+			player.setY(displayHeight-playerSprite.getHeight());
 	}
 
 	/* Renders the background, text, and all of the sprites */
@@ -859,21 +887,23 @@ public class Game {
 
 	/* Draws an entity */
 	private void drawEntity(Entity ent){
-		Sprite entSprite = ent.getSprite();
+		Sprite entSprite = getSprite(ent.getName());
+		//Sprite entSprite = ent.getSprite();
 
 		Color.white.bind();
 		entSprite.getTexture().bind();
+		//entSprite.getTexture().bind();
 
 		//draw entity
 		glBegin(GL_QUADS);
-		glTexCoord2f(0,0);
-		glVertex2d(ent.getX(),ent.getY());
-		glTexCoord2f(1,0);
-		glVertex2d(ent.getX()+entSprite.getWidth(),ent.getY());
-		glTexCoord2f(1,1);
-		glVertex2d(ent.getX()+entSprite.getWidth(),ent.getY()+entSprite.getHeight());
-		glTexCoord2f(0,1);
-		glVertex2d(ent.getX(),ent.getY()+entSprite.getHeight());
+			glTexCoord2f(0,0);
+			glVertex2d(ent.getX(),ent.getY());
+			glTexCoord2f(1,0);
+			glVertex2d(ent.getX()+entSprite.getWidth(),ent.getY());
+			glTexCoord2f(1,1);
+			glVertex2d(ent.getX()+entSprite.getWidth(),ent.getY()+entSprite.getHeight());
+			glTexCoord2f(0,1);
+			glVertex2d(ent.getX(),ent.getY()+entSprite.getHeight());
 		glEnd();
 	}
 
@@ -998,6 +1028,7 @@ public class Game {
 		for (int i = 0; i < listRemove.size(); i++){
 			list.remove(listRemove.get(i));
 		}
+		listRemove.clear();
 	}
 
 	/* Draws a screen */
@@ -1007,14 +1038,14 @@ public class Game {
 		tex.bind();
 
 		glBegin(GL_QUADS);
-		glTexCoord2f(0,tex.getHeight());
-		glVertex2f(0, spr.getHeight());
-		glTexCoord2f(tex.getWidth(),tex.getHeight());
-		glVertex2f(spr.getWidth(), spr.getHeight());
-		glTexCoord2f(tex.getWidth(),0);
-		glVertex2f(spr.getWidth(), 0);
-		glTexCoord2f(0,0);
-		glVertex2f(0, 0);
+			glTexCoord2f(0,tex.getHeight());
+			glVertex2f(0, spr.getHeight());
+			glTexCoord2f(tex.getWidth(),tex.getHeight());
+			glVertex2f(spr.getWidth(), spr.getHeight());
+			glTexCoord2f(tex.getWidth(),0);
+			glVertex2f(spr.getWidth(), 0);
+			glTexCoord2f(0,0);
+			glVertex2f(0, 0);
 		glEnd();
 	}
 
@@ -1027,6 +1058,60 @@ public class Game {
 	public int getDisplayHeight(){
 		return displayHeight;
 	}
+	
+	/* Returns the sprite */
+	public Sprite getSprite(String ref){
+		if (ref.equals("boss")){
+			return bossSprite;
+		}
+		else if (ref.equals("boss_bullet")){
+			return bossBulletSprite;
+		}
+		else if (ref.equals("boss_explosion")){
+			return bossExplosionSprite;
+		}
+		else if (ref.equals("boss_hit")){
+			return bossHitSprite;
+		}
+		else if (ref.equals("bullet")){
+			return bulletSprite;
+		}
+		else if (ref.equals("enemy_bullet")){
+			return enemyBulletSprite;
+		}
+		else if (ref.equals("enemy_explosion")){
+			return enemyExplosionSprite;
+		}
+		else if (ref.equals("enemy_hit")){
+			return enemyHitSprite;
+		}
+		else if (ref.equals("green_box")){
+			return greenBoxSprite;
+		}
+		else if (ref.equals("laser")){
+			return laserSprite;
+		}
+		else if (ref.equals("player")){
+			return playerSprite;
+		}
+		else if (ref.equals("player_explosion")){
+			return playerExplosionSprite;
+		}
+		else if (ref.equals("player_hit")){
+			return playerHitSprite;
+		}
+		else if (ref.equals("powerup_explosion")){
+			return powerupExplosionSprite;
+		}
+		else if (ref.equals("red_box")){
+			return redBoxSprite;
+		}
+		else{
+			System.out.println("fatal error");
+			System.out.println(ref);
+			return null;
+		}
+	}
 
 	/* Randomly generates a number between 100 and 3000 to determine the number of milliseconds between each enemy */
 	public int generateEnemyInterval(){
@@ -1035,17 +1120,12 @@ public class Game {
 		return enemyInterval;
 	}
 
-	/* Creates a sprite that displays an image */
-	public Sprite getSprite(String name){
-		return new Sprite(name);
-	}
-
 	/* Randomly checks to see if a powerup will drop from an enemy */
 	public void powerupCheck(int x, int y){
 		//checks to see if a powerup will drop
 		double powerupCheck = randomGenerator.nextDouble();
 		if (powerupCheck <= 0.07)
-			powerup.add(new Powerup(this, "powerup_explosion", "explosion", x, y));
+			powerup.add(new Powerup(this, "powerup_explosion", x, y));
 	}
 
 	/* Registers a hit */
@@ -1112,7 +1192,7 @@ public class Game {
 			Enemy boss = null;
 
 			powerup.remove(entity);
-			if (((Powerup)entity).getName() == "explosion"){
+			if (((Powerup)entity).getName() == "powerup_explosion"){
 				for (int i = 0; i < enemy.size(); i++){
 					if (!enemy.get(i).getName().equals("boss")){
 						explosion.add(new Explosion(this, "enemy_explosion", enemy.get(i).getX()-5, enemy.get(i).getY()-5, entity));

@@ -3,12 +3,8 @@ package shooter;
 import java.util.Random;
 
 public class Enemy extends Entity{
-	//game class
-	private Game game;
 	//random generator
 	private Random randomGenerator = new Random();
-	//enemy name
-	private String name;
 	//enemy hp
 	private int HP;
 	//time the enemy was created
@@ -18,10 +14,8 @@ public class Enemy extends Entity{
 
 	/* Constructor - gets the enemy sprite */
 	public Enemy(Game game, String ref, int x, int y, int HP, long lastBulletTime, int atk){
-		super(game.getSprite(ref), x, y);
+		super(game, game.getSprite(ref), ref, x, y);
 
-		this.game = game;
-		this.name = ref;
 		this.HP = HP;
 		this.lastBulletTime = lastBulletTime;
 		this.atk = atk;
@@ -50,11 +44,6 @@ public class Enemy extends Entity{
 	/* Returns the atk value of the enemy */
 	public int getATK(){
 		return atk;
-	}
-	
-	/* Returns the name of the enemy */
-	public String getName(){
-		return name;
 	}
 	
 	/* Returns the amount of time that has elapsed since the last bullet fired */

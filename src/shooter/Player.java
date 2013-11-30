@@ -1,16 +1,13 @@
 package shooter;
 
 public class Player extends Entity{
-	//game class
-	private Game game;
 	//player hp
 	private int HP;
 
 	/* Constructor - sets the player coordinates and gets the player sprite */
 	public Player(Game game, String ref, int x, int y, int HP){
-		super(game.getSprite(ref), x, y);
-
-		this.game = game;
+		super(game, game.getSprite(ref), ref, x, y);
+		
 		this.HP = HP;
 	}
 	

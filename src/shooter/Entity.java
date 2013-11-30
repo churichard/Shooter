@@ -4,8 +4,12 @@ import java.awt.Rectangle;
 import org.lwjgl.opengl.Display;
 
 public abstract class Entity {
+	//game class
+	protected Game game;
 	//sprite class
 	private Sprite sprite;
+	//name of the entity
+	protected String name;
 	
 	//the x location of the entity
 	protected int x;
@@ -18,8 +22,10 @@ public abstract class Entity {
 	private Rectangle entity2 = new Rectangle();
 	
 	/* Constructor */
-	public Entity(Sprite sprite, int x, int y){
+	public Entity(Game game, Sprite sprite, String ref, int x, int y){
+		this.game = game;
 		this.sprite = sprite;
+		this.name = ref;
 		this.x = x;
 		this.y = y;
 	}
@@ -49,6 +55,11 @@ public abstract class Entity {
 		return sprite;
 	}
 	
+	/* Returns the name of the entity */
+	public String getName(){
+		return name;
+	}
+	
 	/* Checks to see if the entity should continue to be drawn */
 	public boolean continueDrawing(){
 		return x >= -getSprite().getWidth() && x <= Display.getWidth() && y >= -getSprite().getHeight() && y <= Display.getHeight();
@@ -56,8 +67,8 @@ public abstract class Entity {
 	
 	/* Checks to see if this entity has collided with another entity */
 	public boolean collidesWith(Entity other){
-		entity1.setBounds(x, y, sprite.getWidth(), sprite.getHeight());
-		entity2.setBounds(other.x, other.y, other.sprite.getWidth(), other.sprite.getHeight());
+		entity1.setBounds(x, y, game.getSprite(getName()).getWidth(), game.getSprite(getName()).getHeight());
+		entity2.setBounds(other.x, other.y, game.getSprite(other.getName()).getWidth(), game.getSprite(other.getName()).getHeight());
 		
 		return entity1.intersects(entity2);
 	}

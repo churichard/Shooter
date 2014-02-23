@@ -18,8 +18,8 @@ public class Sprite{
 	public Sprite(String name){
 		try {
 			texture = TextureLoader.getTexture("PNG", getClass().getResourceAsStream("/res/"+name+".png"));
-			width = (int)(texture.getImageWidth()/1.3);
-			height = (int)(texture.getImageHeight()/1.3);
+			width = (int)(texture.getImageWidth()/1.28);
+			height = (int)(texture.getImageHeight()/1.28);
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(0);

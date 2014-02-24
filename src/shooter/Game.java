@@ -4,6 +4,7 @@
  */
 package shooter;
 
+import java.awt.Color;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,8 +20,6 @@ import org.lwjgl.opengl.DisplayMode;
 import static org.lwjgl.opengl.GL11.*;
 
 import org.newdawn.slick.SlickException;
-import org.newdawn.slick.UnicodeFont;
-import org.newdawn.slick.font.effects.ColorEffect;
 import org.newdawn.slick.openal.Audio;
 import org.newdawn.slick.openal.AudioLoader;
 import org.newdawn.slick.opengl.Texture;
@@ -33,11 +32,10 @@ public class Game {
 	private int displayHeight = 600; // length of display
 	
 	/* Font */
-	private java.awt.Font awtFont;
-	private UnicodeFont defaultFont;
-	private UnicodeFont scoreFont;
-	private UnicodeFont congratsFont;
-	private UnicodeFont gameOverFont;
+	private SimpleFont defaultFont;
+	private SimpleFont scoreFont;
+	private SimpleFont congratsFont;
+	private SimpleFont gameOverFont;
 	
 	/* Delta */
 	private int bulletDelta; // time since the last bullet
@@ -335,48 +333,52 @@ public class Game {
 	
 	/* Initialize resources */
 	private void init() {
-		// creates the player
+		// Creates the player
 		player = new Player(this, "player", initPlayerX, initPlayerY, 1000);
 		
-		// initializes screens
-		sprite.put("background", new Sprite("background"));
-		sprite.put("titleScreen", new Sprite("title_screen"));
-		sprite.put("instructScreen", new Sprite("instructions_screen"));
-		sprite.put("creditsScreen", new Sprite("credits_screen"));
-		sprite.put("shopScreen", new Sprite("shop_screen"));
+		// Initializes screens
+		sprite.put("background", new Sprite("/screens/background"));
+		sprite.put("titleScreen", new Sprite("/screens/title_screen"));
+		sprite.put("instructScreen", new Sprite("/screens/instructions_screen"));
+		sprite.put("creditsScreen", new Sprite("/screens/credits_screen"));
+		sprite.put("shopScreen", new Sprite("/screens/shop_screen"));
 		
-		// initialize sprites
-		sprite.put("bossSprite", new Sprite("boss"));
-		sprite.put("bossBulletSprite", new Sprite("boss_bullet"));
-		sprite.put("bossExplosionSprite", new Sprite("boss_explosion"));
-		sprite.put("bossHitSprite", new Sprite("boss_hit"));
-		sprite.put("bulletSprite", new Sprite("bullet"));
-		sprite.put("enemyBulletSprite", new Sprite("enemy_bullet"));
-		sprite.put("enemyExplosionSprite", new Sprite("enemy_explosion"));
-		sprite.put("enemyHitSprite", new Sprite("enemy_hit"));
-		sprite.put("greenBoxSprite", new Sprite("green_box"));
-		sprite.put("laserSprite", new Sprite("laser"));
-		sprite.put("playerSprite", new Sprite("player"));
-		sprite.put("playerExplosionSprite", new Sprite("player_explosion"));
-		sprite.put("playerHitSprite", new Sprite("player_hit"));
-		sprite.put("powerupExplosionSprite", new Sprite("powerup_explosion"));
-		sprite.put("redBoxSprite", new Sprite("red_box"));
+		// Initialize actors
+		sprite.put("playerSprite", new Sprite("/actors/player"));
+		sprite.put("greenBoxSprite", new Sprite("/actors/green_box"));
+		sprite.put("redBoxSprite", new Sprite("/actors/red_box"));
+		sprite.put("bossSprite", new Sprite("/actors/boss"));
 		
-		// initialize sounds
+		// Initialize effects
+		sprite.put("bulletSprite", new Sprite("/effects/bullet"));
+		sprite.put("laserSprite", new Sprite("/effects/laser"));
+		sprite.put("playerHitSprite", new Sprite("/effects/player_hit"));
+		sprite.put("playerExplosionSprite", new Sprite("/effects/player_explosion"));
+		sprite.put("enemyBulletSprite", new Sprite("/effects/enemy_bullet"));
+		sprite.put("enemyHitSprite", new Sprite("/effects/enemy_hit"));
+		sprite.put("enemyExplosionSprite", new Sprite("/effects/enemy_explosion"));
+		sprite.put("bossBulletSprite", new Sprite("/effects/boss_bullet"));
+		sprite.put("bossHitSprite", new Sprite("/effects/boss_hit"));
+		sprite.put("bossExplosionSprite", new Sprite("/effects/boss_explosion"));
+		
+		// Initialize pickups
+		sprite.put("powerupExplosionSprite", new Sprite("/pickups/powerup_explosion"));
+		
+		// Initialize sounds
 		try {
-			sound.put("shootEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/shoot.wav")));
+			sound.put("shootEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/shoot.wav")));
 			sound.put("enemyExplosionEffect",
-					AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/enemy_explosion.wav")));
+					AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/enemy_explosion.wav")));
 			sound.put("playerExplosionEffect",
-					AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/player_explosion.wav")));
-			sound.put("powerupGetEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/powerup_get.wav")));
-			sound.put("playerHitEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/player_hit.wav")));
-			sound.put("shopBuyEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/shop_buy.wav")));
-			sound.put("laserEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/laser.wav")));
+					AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/player_explosion.wav")));
+			sound.put("powerupGetEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/powerup_get.wav")));
+			sound.put("playerHitEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/player_hit.wav")));
+			sound.put("shopBuyEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/shop_buy.wav")));
+			sound.put("laserEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/laser.wav")));
 			sound.put("bossExplosionEffect",
-					AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/boss_explosion.wav")));
+					AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/boss_explosion.wav")));
 			sound.put("bossExplosionEffect2",
-					AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/boss_explosion2.wav")));
+					AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/boss_explosion2.wav")));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -385,56 +387,19 @@ public class Game {
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		
-		setupFont("defaultFont", 20);
-		setupFont("congratsFont", 30);
-		setupFont("scoreFont", 40);
-		setupFont("gameOverFont", 80);
+		try {
+			setupFonts();
+		} catch (SlickException se) {
+			se.printStackTrace();
+		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	private void setupFont(String font, int size) {
+	private void setupFonts() throws SlickException {
 		// setup fonts
-		if (font.equals("defaultFont")) {
-			awtFont = new java.awt.Font("/res/ConsolaMono.ttf", java.awt.Font.BOLD, size);
-			defaultFont = new UnicodeFont(awtFont);
-			defaultFont.getEffects().add(new ColorEffect(java.awt.Color.white));
-			defaultFont.addAsciiGlyphs();
-			try {
-				defaultFont.loadGlyphs();
-			} catch (SlickException e) {
-				e.printStackTrace();
-			}
-		} else if (font.equals("congratsFont")) {
-			awtFont = new java.awt.Font("/res/ConsolaMono.ttf", java.awt.Font.BOLD, size);
-			congratsFont = new UnicodeFont(awtFont);
-			congratsFont.getEffects().add(new ColorEffect(java.awt.Color.white));
-			congratsFont.addAsciiGlyphs();
-			try {
-				congratsFont.loadGlyphs();
-			} catch (SlickException e) {
-				e.printStackTrace();
-			}
-		} else if (font.equals("scoreFont")) {
-			awtFont = new java.awt.Font("/res/ConsolaMono.ttf", java.awt.Font.BOLD, size);
-			scoreFont = new UnicodeFont(awtFont);
-			scoreFont.getEffects().add(new ColorEffect(java.awt.Color.white));
-			scoreFont.addAsciiGlyphs();
-			try {
-				scoreFont.loadGlyphs();
-			} catch (SlickException e) {
-				e.printStackTrace();
-			}
-		} else if (font.equals("gameOverFont")) {
-			awtFont = new java.awt.Font("/res/ConsolaMono.ttf", java.awt.Font.BOLD, size);
-			gameOverFont = new UnicodeFont(awtFont);
-			gameOverFont.getEffects().add(new ColorEffect(java.awt.Color.white));
-			gameOverFont.addAsciiGlyphs();
-			try {
-				gameOverFont.loadGlyphs();
-			} catch (SlickException e) {
-				e.printStackTrace();
-			}
-		}
+		defaultFont = new SimpleFont("res/fonts/ConsolaMono.ttf", "bold", 20, Color.white);
+		congratsFont = new SimpleFont("res/fonts/ConsolaMono.ttf", "bold", 25, Color.white);
+		scoreFont = new SimpleFont("res/fonts/ConsolaMono.ttf", "bold", 40, Color.white);
+		gameOverFont = new SimpleFont("res/fonts/ConsolaMono.ttf", "bold", 80, Color.white);
 	}
 	
 	/* Polls for input */
@@ -818,7 +783,7 @@ public class Game {
 		// draw cash
 		defaultFont.drawString(10, 40, "Cash: $" + cash);
 		// draw shop prompt
-		defaultFont.drawString(displayWidth - 220, displayHeight - 40, "Press F to enter shop");
+		defaultFont.drawString(displayWidth - 280, displayHeight - 40, "Press F to enter shop");
 		
 		if (stopDrawingPlayer) {
 			// draw Game Over

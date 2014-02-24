@@ -8,6 +8,7 @@ import java.awt.Color;
 public class SimpleFont {
 	private UnicodeFont font;
 	
+	// Constructor - constructs a new SimpleFont
 	@SuppressWarnings("unchecked")
 	public SimpleFont(String res, String style, int size, Color color) throws SlickException {
 		if (style.equals("bold")){
@@ -30,22 +31,27 @@ public class SimpleFont {
 		this.font.loadGlyphs();
 	}
 	
+	// Constructor when there is no color specified
 	public SimpleFont(String res, String style, int size) throws SlickException {
 		this(res, style, size, Color.white);
 	}
 	
+	// Draws the string
 	public void drawString(int x, int y, String text) {
 		get().drawString(x, y, text);
 	}
 	
+	// Gets the width of the string
 	public int getWidth(String s) {
 		return get().getWidth(s);
 	}
 	
+	// Gets the height of the string
 	public int getHeight(String s) {
 		return get().getHeight(s);
 	}
 	
+	// Gets the UnicodeFont
 	public UnicodeFont get() {
 		return font;
 	}

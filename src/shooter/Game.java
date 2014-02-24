@@ -51,16 +51,11 @@ public class Game {
 	private HashMap<String, Audio> sound = new HashMap<String, Audio>();
 	
 	/* ArrayLists */
-	private ArrayList<Bullet> bullet = new ArrayList<Bullet>(); // Bullet
-																// ArrayList
-	private ArrayList<Bullet> enemy_bullet = new ArrayList<Bullet>(); // Enemy
-																		// Bullet
-																		// ArrayList
+	private ArrayList<Bullet> bullet = new ArrayList<Bullet>(); // Bullet ArrayList
+	private ArrayList<Bullet> enemy_bullet = new ArrayList<Bullet>(); // Enemy Bullet ArrayList
 	private ArrayList<Enemy> enemy = new ArrayList<Enemy>(); // Enemy ArrayList
-	private ArrayList<Powerup> powerup = new ArrayList<Powerup>(); // Powerup
-																	// ArrayList
-	private ArrayList<Explosion> explosion = new ArrayList<Explosion>(); // Explosion
-																			// ArrayList
+	private ArrayList<Powerup> powerup = new ArrayList<Powerup>(); // Powerup ArrayList
+	private ArrayList<Explosion> explosion = new ArrayList<Explosion>(); // Explosion ArrayList
 	
 	/* Boss */
 	private boolean bossSpawned;
@@ -75,8 +70,7 @@ public class Game {
 	// Bullet
 	private int bulletShootingSpeed = 150; // can shoot a bullet every 150 ms
 	// Doubleshot
-	private int doubleShotShootingSpeed = 270; // can shoot a doubleshot every
-												// 270 ms
+	private int doubleShotShootingSpeed = 270; // can shoot a doubleshot every 270 ms
 	// First bullet offset
 	private int BULLET_X_OFFSET = (int) (-57 / 1.3);
 	private int BULLET_Y_OFFSET = (int) (-85 / 1.3);
@@ -98,8 +92,7 @@ public class Game {
 	
 	/* Random checking */
 	private Random randomGenerator = new Random(); // Random number generator
-	// Number between 100 and 2000 that determines the number of milliseconds
-	// between each enemy
+	// Number between 100 and 2000 that determines the number of milliseconds between each enemy
 	private int enemyInterval;
 	
 	/* Weapons */
@@ -156,17 +149,17 @@ public class Game {
 			// draw title screen
 			drawScreen(sprite.get("titleScreen"));
 			
-			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539 && Mouse.getY() <= (displayHeight - 304)
-					&& Mouse.getY() >= (displayHeight - 373)) {
+			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539
+					&& Mouse.getY() <= (displayHeight - 304) && Mouse.getY() >= (displayHeight - 373)) {
 				showInstructScreen();
 			}
 			
-			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539 && Mouse.getY() <= (displayHeight - 393)
-					&& Mouse.getY() >= (displayHeight - 462)) {
+			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539
+					&& Mouse.getY() <= (displayHeight - 393) && Mouse.getY() >= (displayHeight - 462)) {
 				showCreditsScreen();
 			}
-			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539 && Mouse.getY() <= (displayHeight - 482)
-					&& Mouse.getY() >= (displayHeight - 551)) {
+			if (Mouse.isButtonDown(0) && Mouse.getX() >= 249 && Mouse.getX() <= 539
+					&& Mouse.getY() <= (displayHeight - 482) && Mouse.getY() >= (displayHeight - 551)) {
 				Display.destroy();
 				AL.destroy();
 				System.exit(0);
@@ -181,7 +174,7 @@ public class Game {
 	}
 	
 	private void resetParameters() {
-		// reset game parameters
+		// Reset game parameters
 		// resets all keys to not being pressed
 		wKeyDown = false;
 		aKeyDown = false;
@@ -256,8 +249,8 @@ public class Game {
 			
 			while (Mouse.next()) {
 				if (!laserShot && cash >= 500 && !Mouse.getEventButtonState() && Mouse.getEventButton() == 0
-						&& Mouse.getX() >= 278 && Mouse.getX() <= 382 && Mouse.getY() <= (displayHeight - 207)
-						&& Mouse.getY() >= (displayHeight - 259)) {
+						&& Mouse.getX() >= 278 && Mouse.getX() <= 382
+						&& Mouse.getY() <= (displayHeight - 207) && Mouse.getY() >= (displayHeight - 259)) {
 					bulletShot = false;
 					doubleShot = false;
 					laserShot = true;
@@ -265,9 +258,9 @@ public class Game {
 					sound.get("shopBuyEffect").playAsSoundEffect(1.0f, 1.0f, false);
 				}
 				
-				if (!doubleShot && cash >= 1000 && !Mouse.getEventButtonState() && Mouse.getEventButton() == 0
-						&& Mouse.getX() >= 278 && Mouse.getX() <= 382 && Mouse.getY() <= (displayHeight - 319)
-						&& Mouse.getY() >= (displayHeight - 371)) {
+				if (!doubleShot && cash >= 1000 && !Mouse.getEventButtonState()
+						&& Mouse.getEventButton() == 0 && Mouse.getX() >= 278 && Mouse.getX() <= 382
+						&& Mouse.getY() <= (displayHeight - 319) && Mouse.getY() >= (displayHeight - 371)) {
 					bulletShot = false;
 					doubleShot = true;
 					laserShot = false;
@@ -275,9 +268,9 @@ public class Game {
 					sound.get("shopBuyEffect").playAsSoundEffect(1.0f, 1.0f, false);
 				}
 				
-				if (player.getHP() < 1000 && cash >= 100 && !Mouse.getEventButtonState() && Mouse.getEventButton() == 0
-						&& Mouse.getX() >= 680 && Mouse.getX() <= 784 && Mouse.getY() <= (displayHeight - 207)
-						&& Mouse.getY() >= (displayHeight - 259)) {
+				if (player.getHP() < 1000 && cash >= 100 && !Mouse.getEventButtonState()
+						&& Mouse.getEventButton() == 0 && Mouse.getX() >= 680 && Mouse.getX() <= 784
+						&& Mouse.getY() <= (displayHeight - 207) && Mouse.getY() >= (displayHeight - 259)) {
 					player.setHP(player.getHP() + 100);
 					if (player.getHP() > 1000)
 						player.setHP(1000);
@@ -337,48 +330,44 @@ public class Game {
 		player = new Player(this, "player", initPlayerX, initPlayerY, 1000);
 		
 		// Initializes screens
-		sprite.put("background", new Sprite("/screens/background"));
-		sprite.put("titleScreen", new Sprite("/screens/title_screen"));
-		sprite.put("instructScreen", new Sprite("/screens/instructions_screen"));
-		sprite.put("creditsScreen", new Sprite("/screens/credits_screen"));
-		sprite.put("shopScreen", new Sprite("/screens/shop_screen"));
+		sprite.put("background", new Sprite("screens/background"));
+		sprite.put("titleScreen", new Sprite("screens/title_screen"));
+		sprite.put("instructScreen", new Sprite("screens/instructions_screen"));
+		sprite.put("creditsScreen", new Sprite("screens/credits_screen"));
+		sprite.put("shopScreen", new Sprite("screens/shop_screen"));
 		
 		// Initialize actors
-		sprite.put("playerSprite", new Sprite("/actors/player"));
-		sprite.put("greenBoxSprite", new Sprite("/actors/green_box"));
-		sprite.put("redBoxSprite", new Sprite("/actors/red_box"));
-		sprite.put("bossSprite", new Sprite("/actors/boss"));
+		sprite.put("playerSprite", new Sprite("actors/player"));
+		sprite.put("greenBoxSprite", new Sprite("actors/green_box"));
+		sprite.put("redBoxSprite", new Sprite("actors/red_box"));
+		sprite.put("bossSprite", new Sprite("actors/boss"));
 		
 		// Initialize effects
-		sprite.put("bulletSprite", new Sprite("/effects/bullet"));
-		sprite.put("laserSprite", new Sprite("/effects/laser"));
-		sprite.put("playerHitSprite", new Sprite("/effects/player_hit"));
-		sprite.put("playerExplosionSprite", new Sprite("/effects/player_explosion"));
-		sprite.put("enemyBulletSprite", new Sprite("/effects/enemy_bullet"));
-		sprite.put("enemyHitSprite", new Sprite("/effects/enemy_hit"));
-		sprite.put("enemyExplosionSprite", new Sprite("/effects/enemy_explosion"));
-		sprite.put("bossBulletSprite", new Sprite("/effects/boss_bullet"));
-		sprite.put("bossHitSprite", new Sprite("/effects/boss_hit"));
-		sprite.put("bossExplosionSprite", new Sprite("/effects/boss_explosion"));
+		sprite.put("bulletSprite", new Sprite("effects/bullet"));
+		sprite.put("laserSprite", new Sprite("effects/laser"));
+		sprite.put("playerHitSprite", new Sprite("effects/player_hit"));
+		sprite.put("playerExplosionSprite", new Sprite("effects/player_explosion"));
+		sprite.put("enemyBulletSprite", new Sprite("effects/enemy_bullet"));
+		sprite.put("enemyHitSprite", new Sprite("effects/enemy_hit"));
+		sprite.put("enemyExplosionSprite", new Sprite("effects/enemy_explosion"));
+		sprite.put("bossBulletSprite", new Sprite("effects/boss_bullet"));
+		sprite.put("bossHitSprite", new Sprite("effects/boss_hit"));
+		sprite.put("bossExplosionSprite", new Sprite("effects/boss_explosion"));
 		
 		// Initialize pickups
-		sprite.put("powerupExplosionSprite", new Sprite("/pickups/powerup_explosion"));
+		sprite.put("powerupExplosionSprite", new Sprite("pickups/powerup_explosion"));
 		
 		// Initialize sounds
 		try {
 			sound.put("shootEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/shoot.wav")));
-			sound.put("enemyExplosionEffect",
-					AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/enemy_explosion.wav")));
-			sound.put("playerExplosionEffect",
-					AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/player_explosion.wav")));
+			sound.put("enemyExplosionEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/enemy_explosion.wav")));
+			sound.put("playerExplosionEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/player_explosion.wav")));
 			sound.put("powerupGetEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/powerup_get.wav")));
 			sound.put("playerHitEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/player_hit.wav")));
 			sound.put("shopBuyEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/shop_buy.wav")));
 			sound.put("laserEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/laser.wav")));
-			sound.put("bossExplosionEffect",
-					AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/boss_explosion.wav")));
-			sound.put("bossExplosionEffect2",
-					AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/boss_explosion2.wav")));
+			sound.put("bossExplosionEffect", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/boss_explosion.wav")));
+			sound.put("bossExplosionEffect2", AudioLoader.getAudio("WAV", ResourceLoader.getResourceAsStream("res/sound/boss_explosion2.wav")));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -429,8 +418,7 @@ public class Game {
 			mouseDown = true;
 		} else
 			mouseDown = false;
-		// check to see if the F button is pressed and shows the shop screen if
-		// so
+		// check to see if the F button is pressed and shows the shop screen if so
 		if (Keyboard.isKeyDown(Keyboard.KEY_F)) {
 			showShopScreen();
 		}
@@ -441,8 +429,7 @@ public class Game {
 	}
 	
 	/*
-	 * Checks to see if the display is active or if it has been closed and
-	 * updates it
+	 * Checks to see if the display is active or if it has been closed and updates it
 	 */
 	private void updateDisplay() {
 		if (!Display.isActive()) {
@@ -497,10 +484,10 @@ public class Game {
 				Bullet lastBullet = bullet.get(bullet.size() - 1);
 				
 				// sets the x and y coordinates of the bullet
-				lastBullet.setX(player.getX() + sprite.get("playerSprite").getWidth() - sprite.get("bulletSprite").getWidth() / 2
-						+ BULLET_X_OFFSET);
-				lastBullet.setY(player.getY() + sprite.get("playerSprite").getHeight() - sprite.get("bulletSprite").getHeight()
-						/ 2 + BULLET_Y_OFFSET);
+				lastBullet.setX(player.getX() + sprite.get("playerSprite").getWidth()
+						- sprite.get("bulletSprite").getWidth() / 2 + BULLET_X_OFFSET);
+				lastBullet.setY(player.getY() + sprite.get("playerSprite").getHeight()
+						- sprite.get("bulletSprite").getHeight() / 2 + BULLET_Y_OFFSET);
 				
 				// set the angle of the shot
 				double xChange = Mouse.getX() - lastBullet.getX();
@@ -515,10 +502,10 @@ public class Game {
 				bullet.add(new Bullet(this, "bullet", 0, 0, 100));
 				lastBullet = bullet.get(bullet.size() - 1);
 				
-				lastBullet.setX(player.getX() + sprite.get("playerSprite").getWidth() - sprite.get("bulletSprite").getWidth() / 2
-						+ BULLET2_X_OFFSET);
-				lastBullet.setY(player.getY() + sprite.get("playerSprite").getHeight() - sprite.get("bulletSprite").getHeight()
-						/ 2 + BULLET2_Y_OFFSET);
+				lastBullet.setX(player.getX() + sprite.get("playerSprite").getWidth()
+						- sprite.get("bulletSprite").getWidth() / 2 + BULLET2_X_OFFSET);
+				lastBullet.setY(player.getY() + sprite.get("playerSprite").getHeight()
+						- sprite.get("bulletSprite").getHeight() / 2 + BULLET2_Y_OFFSET);
 				
 				// set the angle of the shot
 				double doubleshotXChange = Mouse.getX() - lastBullet.getX();
@@ -531,8 +518,7 @@ public class Game {
 				
 				Delta.setLastBullet(Delta.getTime());
 			}
-			// if a bullet is shot and the time since the last bullet is at
-			// least shootingSpeed
+			// if a bullet is shot and the time since the last bullet is at least shootingSpeed
 			else if (bulletShot && bulletDelta > bulletShootingSpeed) {
 				// plays the bullet shooting sound
 				sound.get("shootEffect").playAsSoundEffect(1.0f, 0.5f, false);
@@ -542,10 +528,10 @@ public class Game {
 				Bullet lastBullet = bullet.get(bullet.size() - 1);
 				
 				// sets the x and y coordinates of the bullet
-				lastBullet.setX(player.getX() + sprite.get("playerSprite").getWidth() - sprite.get("bulletSprite").getWidth() / 2
-						+ BULLET_X_OFFSET);
-				lastBullet.setY(player.getY() + sprite.get("playerSprite").getHeight() - sprite.get("bulletSprite").getHeight()
-						/ 2 + BULLET_Y_OFFSET);
+				lastBullet.setX(player.getX() + sprite.get("playerSprite").getWidth()
+						- sprite.get("bulletSprite").getWidth() / 2 + BULLET_X_OFFSET);
+				lastBullet.setY(player.getY() + sprite.get("playerSprite").getHeight()
+						- sprite.get("bulletSprite").getHeight() / 2 + BULLET_Y_OFFSET);
 				
 				// set the angle of the shot
 				double xChange = Mouse.getX() - lastBullet.getX();
@@ -570,15 +556,14 @@ public class Game {
 				Bullet lastBullet = bullet.get(bullet.size() - 1);
 				
 				// sets the x and y coordinates of the laser
-				lastBullet.setX(player.getX() + sprite.get("playerSprite").getWidth() - sprite.get("laserSprite").getWidth() / 2
-						+ BULLET_X_OFFSET);
-				lastBullet.setY(player.getY() + sprite.get("playerSprite").getHeight() - sprite.get("laserSprite").getHeight()
-						+ BULLET_Y_OFFSET);
+				lastBullet.setX(player.getX() + sprite.get("playerSprite").getWidth()
+						- sprite.get("laserSprite").getWidth() / 2 + BULLET_X_OFFSET);
+				lastBullet.setY(player.getY() + sprite.get("playerSprite").getHeight()
+						- sprite.get("laserSprite").getHeight() + BULLET_Y_OFFSET);
 			}
 		}
 		
-		// checks to see if the time since the last enemy is greater than the
-		// enemy interval
+		// Checks to see if the time since the last enemy is greater than the enemy interval
 		if (!bossSpawned && enemyDelta > generateEnemyInterval()) {
 			double enemyGenerate = randomGenerator.nextDouble();
 			if (enemyGenerate >= 0.3 || Delta.getDelta("beginning") <= 10000)
@@ -593,7 +578,7 @@ public class Game {
 		}
 		
 		if (bossExplosionNum == 0) {
-			// checks to see if enemy bullets should be generated
+			// Checks to see if enemy bullets should be generated
 			for (int i = 0; i < enemy.size(); i++) {
 				if (enemy.get(i).getName().equals("red_box") && enemy.get(i).getTimeSinceLastBullet() >= 700) {
 					enemy_bullet.add(new Bullet(this, "enemy_bullet", 0, 0, 100));
@@ -603,8 +588,10 @@ public class Game {
 					Sprite enemySprite = enemy.get(i).getSprite();
 					Sprite enemyBulletSprite = lastEnemyBullet.getSprite();
 					
-					lastEnemyBullet.setX(enemy.get(i).getX() + enemySprite.getWidth() / 2 - enemyBulletSprite.getWidth() / 2);
-					lastEnemyBullet.setY(enemy.get(i).getY() + enemySprite.getHeight() / 2 - enemyBulletSprite.getHeight() / 2);
+					lastEnemyBullet.setX(enemy.get(i).getX() + enemySprite.getWidth() / 2
+							- enemyBulletSprite.getWidth() / 2);
+					lastEnemyBullet.setY(enemy.get(i).getY() + enemySprite.getHeight() / 2
+							- enemyBulletSprite.getHeight() / 2);
 				}
 				
 				if (enemy.get(i).getName().equals("boss") && enemy.get(i).getTimeSinceLastBullet() >= 1000) {
@@ -615,8 +602,10 @@ public class Game {
 					Sprite enemySprite = enemy.get(i).getSprite();
 					Sprite enemyBulletSprite = lastEnemyBullet.getSprite();
 					
-					lastEnemyBullet.setX(enemy.get(i).getX() + enemySprite.getWidth() / 2 - enemyBulletSprite.getWidth() / 2);
-					lastEnemyBullet.setY(enemy.get(i).getY() + enemySprite.getHeight() / 2 - enemyBulletSprite.getHeight() / 2);
+					lastEnemyBullet.setX(enemy.get(i).getX() + enemySprite.getWidth() / 2
+							- enemyBulletSprite.getWidth() / 2);
+					lastEnemyBullet.setY(enemy.get(i).getY() + enemySprite.getHeight() / 2
+							- enemyBulletSprite.getHeight() / 2);
 					
 					// set the angle of the shot
 					double xChange = player.getX() - lastEnemyBullet.getX();
@@ -634,8 +623,10 @@ public class Game {
 					enemySprite = enemy.get(i).getSprite();
 					enemyBulletSprite = lastEnemyBullet.getSprite();
 					
-					lastEnemyBullet.setX(enemy.get(i).getX() + enemySprite.getWidth() / 2 - enemyBulletSprite.getWidth() / 2);
-					lastEnemyBullet.setY(enemy.get(i).getY() + enemySprite.getHeight() / 2 - enemyBulletSprite.getHeight() / 2);
+					lastEnemyBullet.setX(enemy.get(i).getX() + enemySprite.getWidth() / 2
+							- enemyBulletSprite.getWidth() / 2);
+					lastEnemyBullet.setY(enemy.get(i).getY() + enemySprite.getHeight() / 2
+							- enemyBulletSprite.getHeight() / 2);
 					
 					// set the angle of the shot
 					xChange = player.getX() - lastEnemyBullet.getX() - 100;
@@ -653,8 +644,10 @@ public class Game {
 					enemySprite = enemy.get(i).getSprite();
 					enemyBulletSprite = lastEnemyBullet.getSprite();
 					
-					lastEnemyBullet.setX(enemy.get(i).getX() + enemySprite.getWidth() / 2 - enemyBulletSprite.getWidth() / 2);
-					lastEnemyBullet.setY(enemy.get(i).getY() + enemySprite.getHeight() / 2 - enemyBulletSprite.getHeight() / 2);
+					lastEnemyBullet.setX(enemy.get(i).getX() + enemySprite.getWidth() / 2
+							- enemyBulletSprite.getWidth() / 2);
+					lastEnemyBullet.setY(enemy.get(i).getY() + enemySprite.getHeight() / 2
+							- enemyBulletSprite.getHeight() / 2);
 					
 					// set the angle of the shot
 					xChange = player.getX() - lastEnemyBullet.getX() + 100;
@@ -727,22 +720,24 @@ public class Game {
 			// draw Congratulations
 			String congrats = "Congratulations! You were able to vanquish";
 			String congrats2 = "all of your evil thoughts and achieve nirvana!";
-			congratsFont.drawString(displayWidth / 2 - congratsFont.getWidth(congrats) / 2,
-					displayHeight / 2 - congratsFont.getHeight(congrats) / 2 - 50, congrats);
-			congratsFont.drawString(displayWidth / 2 - congratsFont.getWidth(congrats2) / 2,
-					displayHeight / 2 - congratsFont.getHeight(congrats2) / 2 - 15, congrats2);
+			congratsFont.drawString(displayWidth / 2 - congratsFont.getWidth(congrats) / 2, displayHeight / 2
+					- congratsFont.getHeight(congrats) / 2 - 50, congrats);
+			congratsFont.drawString(displayWidth / 2 - congratsFont.getWidth(congrats2) / 2, displayHeight
+					/ 2 - congratsFont.getHeight(congrats2) / 2 - 15, congrats2);
 			
 			// draw the score
-			scoreFont.drawString(displayWidth / 2 - scoreFont.getWidth("Score: " + totalCash) / 2,
-					displayHeight / 2 + scoreFont.getHeight("Game Over!") / 2 + scoreFont.getHeight("Score: " + totalCash) / 2
-							+ 10 - 50, "Score: " + totalCash);
+			scoreFont.drawString(displayWidth / 2 - scoreFont.getWidth("Score: " + totalCash) / 2, displayHeight
+					/ 2
+					+ scoreFont.getHeight("Game Over!")
+					/ 2
+					+ scoreFont.getHeight("Score: " + totalCash)
+					/ 2 + 10 - 50, "Score: " + totalCash);
 		}
 	}
 	
 	/* Checks to see if the player and bullets are within the bounds */
 	private void checkBounds() {
-		// checks to see if playerX is to the left of the left side of the
-		// display
+		// checks to see if playerX is to the left of the left side of the display
 		if (player.getX() < 0)
 			player.setX(0);
 		// checks to see if playerX is greater than the width of the display
@@ -787,13 +782,16 @@ public class Game {
 		
 		if (stopDrawingPlayer) {
 			// draw Game Over
-			gameOverFont.drawString(displayWidth / 2 - gameOverFont.getWidth("Game Over!") / 2,
-					displayHeight / 2 - gameOverFont.getHeight("Game Over!") / 2 - 50, "Game Over!");
+			gameOverFont.drawString(displayWidth / 2 - gameOverFont.getWidth("Game Over!") / 2, displayHeight
+					/ 2 - gameOverFont.getHeight("Game Over!") / 2 - 50, "Game Over!");
 			
 			// draw the score
-			scoreFont.drawString(displayWidth / 2 - scoreFont.getWidth("Score: " + totalCash) / 2,
-					displayHeight / 2 + scoreFont.getHeight("Game Over!") / 2 + scoreFont.getHeight("Score: " + totalCash) / 2
-							+ 10 - 50, "Score: " + totalCash);
+			scoreFont.drawString(displayWidth / 2 - scoreFont.getWidth("Score: " + totalCash) / 2, displayHeight
+					/ 2
+					+ scoreFont.getHeight("Game Over!")
+					/ 2
+					+ scoreFont.getHeight("Score: " + totalCash)
+					/ 2 + 10 - 50, "Score: " + totalCash);
 		}
 	}
 	
@@ -898,8 +896,7 @@ public class Game {
 	private void handleBossExplosions(ArrayList list, ArrayList listRemove, int i) {
 		if (bossExplosionNum >= 1
 				&& ((Entity) list.get(i)) instanceof Explosion
-				&& (((Explosion) list.get(i)).getName().equals("enemy_explosion") || ((Explosion) list.get(i)).getName().equals(
-						"boss_explosion"))) {
+				&& (((Explosion) list.get(i)).getName().equals("enemy_explosion") || ((Explosion) list.get(i)).getName().equals("boss_explosion"))) {
 			Entity entity = ((Explosion) list.get(i)).getEntity();
 			int enemyX = entity.getX();
 			int enemyY = entity.getY();
@@ -932,8 +929,10 @@ public class Game {
 				sound.get("bossExplosionEffect2").playAsSoundEffect(1.0f, 1.0f, false);
 				explosion.add(new Explosion(this, "boss_explosion", enemyX, enemyY, entity));
 				Explosion lastExplosion = explosion.get(explosion.size() - 1);
-				lastExplosion.setX(enemyX + entity.getSprite().getWidth() / 2 - lastExplosion.getSprite().getWidth() / 2 + 45);
-				lastExplosion.setY(enemyY + entity.getSprite().getHeight() / 2 - lastExplosion.getSprite().getWidth() / 2 + 30);
+				lastExplosion.setX(enemyX + entity.getSprite().getWidth() / 2
+						- lastExplosion.getSprite().getWidth() / 2 + 45);
+				lastExplosion.setY(enemyY + entity.getSprite().getHeight() / 2
+						- lastExplosion.getSprite().getWidth() / 2 + 30);
 				
 				bossExplosionNum = 5;
 			} else if (bossExplosionNum == 5) {
@@ -1013,8 +1012,7 @@ public class Game {
 	}
 	
 	/*
-	 * Randomly generates a number between 100 and 3000 to determine the number
-	 * of milliseconds between each enemy
+	 * Randomly generates a number between 100 and 3000 to determine the number of milliseconds between each enemy
 	 */
 	public int generateEnemyInterval() {
 		enemyInterval = randomGenerator.nextInt(2901) + 300;
@@ -1047,7 +1045,8 @@ public class Game {
 		if (entity instanceof Bullet) {
 			if (((Bullet) entity).getName().equals("bullet")) {
 				bullet.remove(entity);
-			} else if (((Bullet) entity).getName().equals("enemy_bullet") || ((Bullet) entity).getName().equals("boss_bullet")) {
+			} else if (((Bullet) entity).getName().equals("enemy_bullet")
+					|| ((Bullet) entity).getName().equals("boss_bullet")) {
 				enemy_bullet.remove(entity);
 			}
 		} else if (entity instanceof Enemy) {
@@ -1089,8 +1088,8 @@ public class Game {
 			if (((Powerup) entity).getName() == "powerup_explosion") {
 				for (int i = 0; i < enemy.size(); i++) {
 					if (!enemy.get(i).getName().equals("boss")) {
-						explosion.add(new Explosion(this, "enemy_explosion", enemy.get(i).getX() - 5, enemy.get(i).getY() - 5,
-								entity));
+						explosion.add(new Explosion(this, "enemy_explosion", enemy.get(i).getX() - 5,
+								enemy.get(i).getY() - 5, entity));
 					} else {
 						boss = enemy.get(i);
 					}
@@ -1115,7 +1114,8 @@ public class Game {
 			// play player explosion sfx
 			sound.get("playerExplosionEffect").playAsSoundEffect(1.0f, 1.0f, false);
 			
-			explosion.add(new Explosion(this, "player_explosion", player.getX() - 5, player.getY() - 5, entity));
+			explosion.add(new Explosion(this, "player_explosion", player.getX() - 5, player.getY() - 5,
+					entity));
 			stopDrawingPlayer = true;
 		}
 	}

@@ -1,5 +1,5 @@
 # Shooter
-This is a 2D shoot 'em up game that I'm working on for experience with libraries, graphics and sound in the Java programming language.
+A 2D shoot 'em up game that features randomly spawning enemies, different weapons, a shop, a final boss, and a meditating main character.
 
 ## How to Play
 Click on the "Releases" button up top and download the latest release. Currently, it only supports Windows.

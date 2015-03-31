@@ -1,4 +1,6 @@
 # Shooter
+
+## Description
 A 2D shoot 'em up game that features randomly spawning enemies, different weapons, a shop, a final boss, and a meditating main character.
 
 ## How to Play
@@ -12,6 +14,9 @@ Click on the "Releases" button up top and download the latest release. Currently
 ![Boss](http://churichard.me/img/portfolio/Shooter/Shooter_3.png)
 
 ## Videos
-[YouTube - Victory](https://www.youtube.com/watch?v=9GXKpAjR3hU)
+Here is a video showing what a victory in the game looks like: [YouTube - Victory](https://www.youtube.com/watch?v=9GXKpAjR3hU)
 <br>
-[YouTube - Defeat](https://www.youtube.com/watch?v=R3CxDFTRgf4)
+Here is a video showing what a defeat in the game looks like: [YouTube - Defeat](https://www.youtube.com/watch?v=R3CxDFTRgf4)
+
+## License
+The code is licensed underneath the MIT License.
